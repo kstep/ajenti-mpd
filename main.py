@@ -7,10 +7,14 @@ import mpd
 class Model(object):
     def __init__(self, data={}, **kwargs):
         data.update(kwargs)
-        self.__dict__ = data
+        for k, v in data.iteritems():
+            setattr(self, k, v)
 
     def get(self, name, default=None):
         return getattr(self, name, default)
+
+    def __repr__(self):
+        return repr(self.__dict__)
 
 class Song(Model):
     def __init__(self, data={}, **kwargs):
@@ -44,13 +48,23 @@ class MpdPlugin(SectionPlugin):
         self.song = NO_SONG
         self.status = Status()
 
-        self.binder = Binder(self, self.find('mpd'))
+        def post_item_bind(obj, collection, item, ui):
+            ui.find('play').on('click', self.play, item.pos)
 
+        def delete_item(item, collection):
+            self.remove(item.pos)
+
+        self.find('playlist').post_item_bind = post_item_bind
+        self.find('playlist').delete_item = delete_item
+
+
+    def on_first_page_load(self):
+        self.binder = Binder(self, self.find('mpd'))
         self.refresh()
 
     @on('refresh', 'click')
     def refresh(self):
-        self.playlist = map(Song, self.mpd_do('playlist'))
+        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(self.mpd_do('playlist')))
         self.status = Status(self.mpd_do('status'))
         self.song = Song(self.mpd_do('currentsong'))
 
@@ -70,9 +84,21 @@ class MpdPlugin(SectionPlugin):
 
         self.binder.populate()
 
+    def remove(self, pos):
+        self.mpd_do('delete', pos)
+        self.refresh()
+
+    #@on('reorder', 'click')
+    #def reorder(self):
+        #self.binder.update()
+
     @on('play', 'click')
-    def play(self):
-        self.mpd_do('play')
+    def play(self, pos=None):
+        if pos is None:
+            self.mpd_do('play')
+        else:
+            self.mpd_do('play', pos)
+
         self.refresh()
 
     @on('pause', 'click')
@@ -93,6 +119,11 @@ class MpdPlugin(SectionPlugin):
     @on('next', 'click')
     def next(self):
         self.mpd_do('next')
+        self.refresh()
+
+    @on('clear', 'click')
+    def clear(self):
+        self.mpd_do('clear')
         self.refresh()
 
     def mpd_do(self, command, *args):

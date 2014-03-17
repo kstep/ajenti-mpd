@@ -13,6 +13,7 @@
         <bind:dict bind="song">
             <hc>
                 <button icon="plus" id="add" style="mini" text="{Add}" />
+                <button icon="trash" id="clear" style="mini" text="{Clear}" />
                 <button icon="refresh" id="refresh" style="mini" />
                 <label bind="title" />
             </hc>
@@ -23,7 +24,7 @@
                 <dtr>
                     <dth width="1%" />
                     <dth text="{Title}" />
-                    <dth text="{Action}" />
+                    <dth width="60" text="{Action}" />
                 </dtr>
             </sortabledt>
             <bind:template>
@@ -31,7 +32,7 @@
                     <dtd><icon bind="icon" /></dtd>
                     <dtd><label bind="title" /></dtd>
                     <dtd>
-                        <tooltip text="{Play}"><button icon="play" style="mini" /></tooltip>
+                        <tooltip text="{Play}"><button icon="play" id="play" style="mini" /></tooltip>
                         <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
                     </dtd>
                 </dtr>
