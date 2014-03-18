@@ -6,7 +6,7 @@ from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from datetime import datetime
-from gevent.lock import RLock
+from gevent.lock import Semaphore
 import mpd
 import gevent
 
@@ -78,7 +78,7 @@ class Status(Model):
 class MpdPlugin(SectionPlugin):
     def init(self):
         self._client = mpd.MPDClient()
-        self._client_lock = RLock()
+        self._client_lock = Semaphore()
 
         # meta-data
         self.title = 'MPD'
