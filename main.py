@@ -12,9 +12,19 @@ import mpd
 import gevent
 
 ident = lambda x: x
-timestamp = lambda d: datetime.strptime(d, '%Y-%m-%dT%H:%M:%SZ')
 intbool = lambda v: bool(int(v))
-time = lambda t: '%02d:%02d' % (int(t) / 60, int(t) % 60)
+time = lambda t: '%2d:%02d' % (int(t) / 60, int(t) % 60)
+
+def timestamp(d):
+    for pattern in (
+            '%Y-%m-%dT%H:%M:%SZ',
+            '%Y',
+            ):
+        try:
+            return datetime.strptime(d, pattern)
+        except ValueError:
+            continue
+    return d
 
 class Model(object):
     _cast = {}
