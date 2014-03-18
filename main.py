@@ -4,6 +4,7 @@ from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from datetime import datetime
+from gevent.lock import RLock
 import mpd
 import gevent
 
@@ -66,6 +67,7 @@ class Status(Model):
 class MpdPlugin(SectionPlugin):
     def init(self):
         self._client = mpd.MPDClient()
+        self._client_lock = RLock()
 
         # meta-data
         self.title = 'MPD'
@@ -100,9 +102,14 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self):
-        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(self.mpd_do('playlist', default=[])))
-        self.status = Status(self.mpd_do('status', default={}))
-        self.song = Song(self.mpd_do('currentsong', default={}))
+        playlist, status, song = self.mpd_bulk_do(
+                'playlist',
+                'status',
+                'currentsong',
+                defaults=([], {}, {}))
+        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
+        self.status = Status(status)
+        self.song = Song(song)
 
         try:
             self.playlist[self.status.song] = self.song
@@ -189,15 +196,40 @@ class MpdPlugin(SectionPlugin):
         self.mpd_do('clear')
         self.refresh()
 
-    def mpd_do(self, command, *args, **kwargs):
-        command = command.replace('_', ' ')
-        try:
-            return self._client._execute(command, args)
+    def mpd_bulk_do(self, *commands, **options):
+        with self._client_lock:
+            retry = True
+            while True:
+                try:
+                    self._client.command_list_ok_begin()
 
-        except mpd.ConnectionError:
-            if not self.reconnect():
-                return kwargs.get('default', None)
-            return self._client._execute(command, args)
+                    for cmd in commands:
+                        if isinstance(cmd, basestring):
+                            args = ()
+                        else:
+                            cmd, args = cmd[0], cmd[1:]
+
+                        cmd = cmd.replace('_', ' ')
+                        self._client._execute(cmd, args)
+
+                    return tuple(self._client.command_list_end())
+
+                except mpd.ConnectionError:
+                    if not (retry and self.reconnect()):
+                        return options.get('defaults') or ([None] * len(commands))
+                    retry = False
+
+
+    def mpd_do(self, command, *args, **kwargs):
+        with self._client_lock:
+            command = command.replace('_', ' ')
+            try:
+                return self._client._execute(command, args)
+
+            except mpd.ConnectionError:
+                if not self.reconnect():
+                    return kwargs.get('default', None)
+                return self._client._execute(command, args)
 
     _connected = True
     def reconnect(self):
