@@ -28,9 +28,14 @@ class Model(object):
     def __repr__(self):
         return repr(self.__dict__)
 
+class Output(Model):
+    _cast = {
+            'outputenabled': intbool,
+            'outputid': int,
+            }
+
 class Playlist(Model):
     _cast = {'last_modified': timestamp}
-    pass
 
 class Song(Model):
     _cast = {
@@ -84,6 +89,7 @@ class MpdPlugin(SectionPlugin):
         # data-bindings
         self.playlist = []
         self.playlists = []
+        self.outputs = []
         self.song = NO_SONG
         self.status = Status()
 
@@ -118,6 +124,10 @@ class MpdPlugin(SectionPlugin):
         self.find('playlists').delete_item = delete_playlist
         self.find('playlists').post_item_bind = post_playlist_bind
 
+        def post_output_bind(obj, collection, item, ui):
+            ui.find('enabled').on('click', self.toggleoutput, item)
+
+        self.find('outputs').post_item_bind = post_output_bind
 
     def on_first_page_load(self):
         self.binder = Binder(self, self.find('mpd'))
@@ -130,16 +140,18 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self):
-        playlist, status, song, playlists = self.mpd_bulk_do(
+        playlist, status, song, playlists, outputs = self.mpd_bulk_do(
                 'playlist',
                 'status',
                 'currentsong',
                 'listplaylists',
-                defaults=([], {}, {}, []))
+                'outputs',
+                defaults=([], {}, {}, [], []))
         #self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
         self.status = Status(status)
         self.song = Song(song)
         self.playlists = map(Playlist, playlists)
+        self.outputs = map(Output, outputs)
         self.playlist = map(lambda s: Song(s[1][0], pos=s[0]),
                 enumerate(self.mpd_bulk_do(
                         it.imap(lambda s: ('lsinfo', s.split(': ')[1]), playlist),
@@ -163,6 +175,10 @@ class MpdPlugin(SectionPlugin):
             pass
 
         self.binder.populate()
+
+    def toggleoutput(self, output):
+        self.mpd_do('disableoutput' if output.outputenabled else 'enableoutput', output.outputid)
+        self.refresh()
 
     @on('voldown', 'click')
     def voldown(self, delta=10):

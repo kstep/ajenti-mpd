@@ -85,10 +85,21 @@
             <tab title="Library">
             </tab>
 
-            <tab title="Streams">
-            </tab>
-
             <tab title="Outputs">
+                <bind:collection bind="outputs" id="outputs">
+                    <dt bind="__items">
+                        <dtr>
+                            <dth width="1%" />
+                            <dth text="{Name}" />
+                        </dtr>
+                    </dt>
+                    <bind:template>
+                        <dtr>
+                            <dtd><togglebutton icon="volume-up" style="mini" bind:pressed="outputenabled" id="enabled" /></dtd>
+                            <dtd><label bind="outputname" /></dtd>
+                        </dtr>
+                    </bind:template>
+                </bind:collection>
             </tab>
         </tabs>
     </pad>
