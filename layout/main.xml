@@ -31,7 +31,8 @@
                 </right>
 
                 <hc>
-                    <button icon="trash" id="clear" style="mini" text="{Clear}" />
+                    <button icon="plus" id="add" style="mini" text="{Add}" />
+                    <button icon="trash" id="clear" style="mini" text="{Delete}" />
                     <button icon="refresh" id="refresh" style="mini" />
                 </hc>
 
@@ -59,8 +60,8 @@
             <tab title="Playlists">
                 <bind:collection bind="playlists" id="playlists">
                     <hc>
-                        <button icon="plus" id="add" bind="__add" style="mini" text="{Add}" />
-                        <button icon="trash" id="clearpl" style="mini" text="{Clear}" />
+                        <button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" />
+                        <button icon="trash" id="clearpl" style="mini" text="{Delete}" />
                     </hc>
                     <dt bind="__items">
                         <dtr>
@@ -103,4 +104,15 @@
             </tab>
         </tabs>
     </pad>
+
+    <dialog visible="False" id="add_dialog" buttons="[
+        {'id': 'add', 'text': _('Add')},
+        {'id': 'cancel', 'text': _('Cancel')}
+        ]">
+        <pad>
+            <formline text="{URL}">
+                <textbox id="new_song_url" />
+            </formline>
+        </pad>
+    </dialog>
 </body>

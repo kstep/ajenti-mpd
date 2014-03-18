@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 from ajenti.api import *  # noqa
 from ajenti.plugins import *  # noqa
 from ajenti.plugins.main.api import SectionPlugin
@@ -7,7 +9,6 @@ from datetime import datetime
 from gevent.lock import RLock
 import mpd
 import gevent
-import itertools as it
 
 ident = lambda x: x
 timestamp = lambda d: datetime.strptime(d, '%Y-%m-%dT%H:%M:%SZ')
@@ -129,6 +130,7 @@ class MpdPlugin(SectionPlugin):
 
         self.find('outputs').post_item_bind = post_output_bind
 
+
     def on_first_page_load(self):
         self.binder = Binder(self, self.find('mpd'))
         self.context.session.spawn(self.worker)
@@ -137,6 +139,31 @@ class MpdPlugin(SectionPlugin):
         while True:
             self.refresh()
             gevent.sleep(5)
+
+    def add(self, url):
+        url = url.strip()
+        if not url:
+            return
+
+        try:
+            self.mpd_do('addid', url)
+
+        except mpd.CommandError:
+            self.context.notify('error', _('Song "%s" not found') % url)
+
+        else:
+            self.refresh()
+
+    @on('add', 'click')
+    def open_add_dialog(self):
+        self.find('add_dialog').visible = True
+
+    @on('add_dialog', 'button')
+    def submit_add_dialog(self, button):
+        dialog = self.find('add_dialog')
+        dialog.visible = False
+        if button == 'add':
+            self.add(dialog.find('new_song_url').value)
 
     @on('refresh', 'click')
     def refresh(self):
