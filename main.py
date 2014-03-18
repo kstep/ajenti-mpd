@@ -91,6 +91,7 @@ class MpdPlugin(SectionPlugin):
                 self.find('pause').visible = False
 
             self.status.pvolume = self.status.volume / 100.0
+            self.status.muted = self.status.volume == 0
 
         except AttributeError:
             pass
