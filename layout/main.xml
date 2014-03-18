@@ -41,7 +41,7 @@
                 <label text="” by " /><label bind="artist" />
             </bind:dict>
 
-            <tabs>
+            <tabs id="tabs">
 
                 <tab title="Now Playing">
                     <hc>
@@ -84,7 +84,7 @@
                             <dtr>
                                 <dth width="1%" />
                                 <dth text="{Name}" />
-                                <dth width="60" text="{Action}" />
+                                <dth width="90" text="{Action}" />
                             </dtr>
                         </dt>
                         <bind:template>
@@ -93,6 +93,7 @@
                                 <dtd><editable id="playlist" bind="playlist" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append}"><button icon="plus" style="mini" id="load" /></tooltip>
+                                    <tooltip text="{Clear}"><button icon="trash" id="clear" style="mini" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
                                 </dtd>
                             </dtr>
@@ -101,6 +102,31 @@
                 </tab>
 
                 <tab title="Library">
+                    <bind:collection bind="library" id="library">
+                        <dt bind="__items">
+                            <dtr>
+                                <dth width="1%" />
+                                <dth text="{Artist}" />
+                                <dth text="{Title}" />
+                                <dth text="{Genre}" />
+                                <dth text="{Time}" />
+                                <dth width="60" text="{Action}" />
+                            </dtr>
+                        </dt>
+                        <hc bind="__paging" />
+                        <bind:template>
+                            <dtr>
+                                <dtd><icon icon="music" /></dtd>
+                                <dtd><label bind="artist" /></dtd>
+                                <dtd><label bind="title" /></dtd>
+                                <dtd><label bind="genre" /></dtd>
+                                <dtd><label bind="time" /></dtd>
+                                <dtd>
+                                    <tooltip text="{Append}"><button icon="plus" style="mini" id="add" /></tooltip>
+                                </dtd>
+                            </dtr>
+                        </bind:template>
+                    </bind:collection>
                 </tab>
 
                 <tab title="Outputs">

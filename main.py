@@ -14,6 +14,7 @@ import gevent
 ident = lambda x: x
 timestamp = lambda d: datetime.strptime(d, '%Y-%m-%dT%H:%M:%SZ')
 intbool = lambda v: bool(int(v))
+time = lambda t: '%02d:%02d' % (int(t) / 60, int(t) % 60)
 
 class Model(object):
     _cast = {}
@@ -48,7 +49,7 @@ class Song(Model):
             'last_modified': timestamp,
             'pos': int,
             'id': int,
-            'time': int,
+            'time': time,
             }
 
     def __init__(self, data={}, **kwargs):
@@ -95,6 +96,7 @@ class MpdPlugin(SectionPlugin):
         self.playlist = []
         self.playlists = []
         self.outputs = []
+        self.library = []
         self.song = NO_SONG
         self.status = Status()
 
@@ -124,7 +126,7 @@ class MpdPlugin(SectionPlugin):
 
         def post_playlist_bind(obj, collection, item, ui):
             ui.find('load').on('click', self.mpd_do, 'load', item.playlist)
-            ui.find('playlist').on('change', self.mpd_do, 'rename', item.playlist, ui.find('playlist').value)
+            ui.find('clear').on('click', self.mpd_do, 'playlistclear', item.playlist)
 
         self.find('playlists').add_item = add_playlist
         self.find('playlists').delete_item = delete_playlist
@@ -134,6 +136,20 @@ class MpdPlugin(SectionPlugin):
             ui.find('enabled').on('click', self.toggleoutput, item)
 
         self.find('outputs').post_item_bind = post_output_bind
+
+        def post_library_bind(obj, collection, item, ui):
+            ui.find('add').on('click', self.add, item.file)
+
+        self.find('library').post_item_bind = post_library_bind
+
+        self.tabs = self.find('tabs')
+
+    @on('tabs', 'switch')
+    def tab_switch(self):
+        if self.tabs.active == 2:  # library tab
+            self.library = imap(Song, ifilter(lambda s: 'file' in s, self.mpd_do('listallinfo')))
+            self.binder.populate()
+
 
     @on('rename', 'click')
     def rename_playlists(self):
