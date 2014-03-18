@@ -2,6 +2,15 @@
     <pad id="mpd">
         <right>
             <hc>
+                <bind:dict bind="status">
+                    <indent><hc>
+                        <button icon="volume-off" id="mute" style="mini" />
+                        <button icon="volume-down" id="voldown" style="mini" />
+                        <progressbar id="volume" width="100" bind:value="pvolume" />
+                        <button icon="volume-up" id="volup" style="mini" />
+                    </hc></indent>
+                </bind:dict>
+
                 <button icon="step-backward" id="prev" style="mini" />
                 <button icon="play" id="play" style="mini" />
                 <button icon="pause" id="pause" style="mini" visible="false" />
@@ -12,7 +21,6 @@
 
         <bind:dict bind="song">
             <hc>
-                <button icon="plus" id="add" style="mini" text="{Add}" />
                 <button icon="trash" id="clear" style="mini" text="{Clear}" />
                 <button icon="refresh" id="refresh" style="mini" />
                 <label bind="title" />

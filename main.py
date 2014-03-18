@@ -4,12 +4,16 @@ from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
 import mpd
+import gevent
 
+ident = lambda x: x
 class Model(object):
+    _cast = {}
+
     def __init__(self, data={}, **kwargs):
         data.update(kwargs)
         for k, v in data.iteritems():
-            setattr(self, k, v)
+            setattr(self, k, self._cast.get(k, ident)(v))
 
     def get(self, name, default=None):
         return getattr(self, name, default)
@@ -30,7 +34,7 @@ class Song(Model):
 NO_SONG = Song()
 
 class Status(Model):
-    pass
+    _cast = {'volume': int, 'song': int, 'songid': int}
 
 @plugin
 class MpdPlugin(SectionPlugin):
@@ -61,7 +65,12 @@ class MpdPlugin(SectionPlugin):
 
     def on_first_page_load(self):
         self.binder = Binder(self, self.find('mpd'))
-        self.refresh()
+        self.context.session.spawn(self.worker)
+
+    def worker(self):
+        while True:
+            self.refresh()
+            gevent.sleep(5)
 
     @on('refresh', 'click')
     def refresh(self):
@@ -70,7 +79,7 @@ class MpdPlugin(SectionPlugin):
         self.song = Song(self.mpd_do('currentsong', default={}))
 
         try:
-            self.playlist[int(self.status.song)] = self.song
+            self.playlist[self.status.song] = self.song
             self.song.icon = 'play'
 
             if self.status.state == 'play':
@@ -81,10 +90,35 @@ class MpdPlugin(SectionPlugin):
                 self.find('play').visible = True
                 self.find('pause').visible = False
 
+            self.status.pvolume = self.status.volume / 100.0
+
         except AttributeError:
             pass
 
         self.binder.populate()
+
+    @on('voldown', 'click')
+    def voldown(self, delta=10):
+        self.mpd_do('volume', -delta)
+        self.refresh()
+
+    @on('volup', 'click')
+    def volup(self, delta=10):
+        self.mpd_do('volume', delta)
+        self.refresh()
+
+    _last_volume = 0
+    @on('mute', 'click')
+    def mute(self):
+        if self.status.volume == 0:
+            self.volume(self._last_volume)
+        else:
+            self._last_volume = self.status.volume
+            self.volume(0)
+
+    def volume(self, value):
+        self.mpd_do('setvol', value)
+        self.refresh()
 
     def remove(self, pos):
         self.mpd_do('delete', pos)
