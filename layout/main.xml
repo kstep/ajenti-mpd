@@ -57,6 +57,29 @@
             </tab>
 
             <tab title="Playlists">
+                <bind:collection bind="playlists" id="playlists">
+                    <hc>
+                        <button icon="plus" id="add" bind="__add" style="mini" text="{Add}" />
+                        <button icon="trash" id="clearpl" style="mini" text="{Clear}" />
+                    </hc>
+                    <dt bind="__items">
+                        <dtr>
+                            <dth width="1%" />
+                            <dth text="{Name}" />
+                            <dth width="60" text="{Action}" />
+                        </dtr>
+                    </dt>
+                    <bind:template>
+                        <dtr>
+                            <dtd><icon icon="music" /></dtd>
+                            <dtd><label bind="playlist" /></dtd>
+                            <dtd>
+                                <tooltip text="{Play}"><button icon="play" style="mini" id="play" /></tooltip>
+                                <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
+                            </dtd>
+                        </dtr>
+                    </bind:template>
+                </bind:collection>
             </tab>
 
             <tab title="Library">

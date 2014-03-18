@@ -28,6 +28,10 @@ class Model(object):
     def __repr__(self):
         return repr(self.__dict__)
 
+class Playlist(Model):
+    _cast = {'last_modified': timestamp}
+    pass
+
 class Song(Model):
     _cast = {
             'date': timestamp,
@@ -79,6 +83,7 @@ class MpdPlugin(SectionPlugin):
 
         # data-bindings
         self.playlist = []
+        self.playlists = []
         self.song = NO_SONG
         self.status = Status()
 
@@ -90,6 +95,28 @@ class MpdPlugin(SectionPlugin):
 
         self.find('playlist').post_item_bind = post_item_bind
         self.find('playlist').delete_item = delete_item
+
+        def add_playlist(item, collection):
+            for i in xrange(1, 1000000):
+                try:
+                    self.mpd_do('save', 'Untitled %d' % i)
+                except mpd.CommandError:
+                    continue
+                else:
+                    break
+
+            self.refresh()
+
+        def delete_playlist(item, collection):
+            self.mpd_do('rm', item.playlist)
+            self.refresh()
+
+        def post_playlist_bind(obj, collection, item, ui):
+            ui.find('play').on('click', self.mpd_do, 'load', item.playlist)
+
+        self.find('playlists').add_item = add_playlist
+        self.find('playlists').delete_item = delete_playlist
+        self.find('playlists').post_item_bind = post_playlist_bind
 
 
     def on_first_page_load(self):
@@ -103,21 +130,21 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self):
-        playlist, status, song = self.mpd_bulk_do(
+        playlist, status, song, playlists = self.mpd_bulk_do(
                 'playlist',
                 'status',
                 'currentsong',
-                defaults=([], {}, {}))
+                'listplaylists',
+                defaults=([], {}, {}, []))
         #self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
         self.status = Status(status)
         self.song = Song(song)
-
-        if playlist:
-            self.playlist = map(lambda s: Song(s[1][0], pos=s[0]),
-                    enumerate(self.mpd_bulk_do(
-                            it.imap(lambda s: ('lsinfo', s.split(': ')[1]), playlist),
-                            defaults=[{}] * len(playlist)
-                        )))
+        self.playlists = map(Playlist, playlists)
+        self.playlist = map(lambda s: Song(s[1][0], pos=s[0]),
+                enumerate(self.mpd_bulk_do(
+                        it.imap(lambda s: ('lsinfo', s.split(': ')[1]), playlist),
+                        defaults=[{}] * len(playlist)
+                    ))) if playlist else []
 
         try:
             if self.status.get('state') == 'play':
