@@ -75,7 +75,7 @@
                             <dtd><icon icon="music" /></dtd>
                             <dtd><label bind="playlist" /></dtd>
                             <dtd>
-                                <tooltip text="{Play}"><button icon="play" style="mini" id="play" /></tooltip>
+                                <tooltip text="{Append}"><button icon="plus" style="mini" id="load" /></tooltip>
                                 <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
                             </dtd>
                         </dtr>

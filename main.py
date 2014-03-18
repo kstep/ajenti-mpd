@@ -119,7 +119,7 @@ class MpdPlugin(SectionPlugin):
             self.refresh()
 
         def post_playlist_bind(obj, collection, item, ui):
-            ui.find('play').on('click', self.mpd_do, 'load', item.playlist)
+            ui.find('load').on('click', self.mpd_do, 'load', item.playlist)
 
         self.find('playlists').add_item = add_playlist
         self.find('playlists').delete_item = delete_playlist
