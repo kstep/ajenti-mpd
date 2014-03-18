@@ -94,10 +94,10 @@ class MpdPlugin(SectionPlugin):
         self.status = Status()
 
         def post_item_bind(obj, collection, item, ui):
-            ui.find('play').on('click', self.play, item.pos)
+            ui.find('play').on('click', self.play, item)
 
         def delete_item(item, collection):
-            self.remove(item.pos)
+            self.remove(item)
 
         self.find('playlist').post_item_bind = post_item_bind
         self.find('playlist').delete_item = delete_item
@@ -203,8 +203,8 @@ class MpdPlugin(SectionPlugin):
         self.mpd_do('setvol', value)
         self.refresh()
 
-    def remove(self, pos):
-        self.mpd_do('delete', pos)
+    def remove(self, song):
+        self.mpd_do('deleteid', song.id)
         self.refresh()
 
     #@on('reorder', 'click')
@@ -212,11 +212,11 @@ class MpdPlugin(SectionPlugin):
         #self.binder.update()
 
     @on('play', 'click')
-    def play(self, pos=None):
+    def play(self, song=None):
         if pos is None:
             self.mpd_do('play')
         else:
-            self.mpd_do('play', pos)
+            self.mpd_do('playid', song.id)
 
         self.refresh()
 
