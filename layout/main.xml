@@ -3,6 +3,12 @@
         <tabs>
 
             <tab title="Now Playing">
+                <bind:dict bind="song">
+                    <label text="Playing “" /><label bind="title" />
+                    <label text="” from “" /><label bind="album" />
+                    <label text="” by " /><label bind="artist" />
+                </bind:dict>
+
                 <right>
                     <hc>
                         <bind:dict bind="status">
@@ -24,13 +30,10 @@
                     </hc>
                 </right>
 
-                <bind:dict bind="song">
-                    <hc>
-                        <button icon="trash" id="clear" style="mini" text="{Clear}" />
-                        <button icon="refresh" id="refresh" style="mini" />
-                        <label bind="title" />
-                    </hc>
-                </bind:dict>
+                <hc>
+                    <button icon="trash" id="clear" style="mini" text="{Clear}" />
+                    <button icon="refresh" id="refresh" style="mini" />
+                </hc>
 
                 <bind:collection bind="playlist" id="playlist">
                     <sortabledt bind="__items">

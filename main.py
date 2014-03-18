@@ -7,6 +7,7 @@ from datetime import datetime
 from gevent.lock import RLock
 import mpd
 import gevent
+import itertools as it
 
 ident = lambda x: x
 timestamp = lambda d: datetime.strptime(d, '%Y-%m-%dT%H:%M:%SZ')
@@ -107,9 +108,16 @@ class MpdPlugin(SectionPlugin):
                 'status',
                 'currentsong',
                 defaults=([], {}, {}))
-        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
+        #self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
         self.status = Status(status)
         self.song = Song(song)
+
+        if playlist:
+            self.playlist = map(lambda s: Song(s[1][0], pos=s[0]),
+                    enumerate(self.mpd_bulk_do(
+                            it.imap(lambda s: ('lsinfo', s.split(': ')[1]), playlist),
+                            defaults=[{}] * len(playlist)
+                        )))
 
         try:
             self.playlist[self.status.song] = self.song
@@ -197,10 +205,16 @@ class MpdPlugin(SectionPlugin):
         self.refresh()
 
     def mpd_bulk_do(self, *commands, **options):
-        with self._client_lock:
-            retry = True
-            while True:
-                try:
+        if not commands:
+            return
+
+        if len(commands) == 1 and hasattr(commands[0], '__iter__'):
+            commands = commands[0]
+
+        retry = True
+        while True:
+            try:
+                with self._client_lock:
                     self._client.command_list_ok_begin()
 
                     for cmd in commands:
@@ -214,10 +228,10 @@ class MpdPlugin(SectionPlugin):
 
                     return tuple(self._client.command_list_end())
 
-                except mpd.ConnectionError:
-                    if not (retry and self.reconnect()):
-                        return options.get('defaults') or ([None] * len(commands))
-                    retry = False
+            except mpd.ConnectionError:
+                if not (retry and self.reconnect()):
+                    return options.get('defaults') or ([None] * len(commands))
+                retry = False
 
 
     def mpd_do(self, command, *args, **kwargs):
