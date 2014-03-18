@@ -1,4 +1,5 @@
-from ajenti.api import plugin
+from ajenti.api import *  # noqa
+from ajenti.plugins import *  # noqa
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
@@ -39,7 +40,7 @@ class MpdPlugin(SectionPlugin):
         # meta-data
         self.title = 'MPD'
         self.icon = 'music'
-        self.category = "Software"
+        self.category = _("Software")
 
         self.append(self.ui.inflate('mpd:main'))
 
@@ -64,23 +65,24 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self):
-        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(self.mpd_do('playlist')))
-        self.status = Status(self.mpd_do('status'))
-        self.song = Song(self.mpd_do('currentsong'))
+        self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(self.mpd_do('playlist', default=[])))
+        self.status = Status(self.mpd_do('status', default={}))
+        self.song = Song(self.mpd_do('currentsong', default={}))
 
         try:
             self.playlist[int(self.status.song)] = self.song
             self.song.icon = 'play'
+
+            if self.status.state == 'play':
+                self.find('play').visible = False
+                self.find('pause').visible = True
+
+            else:
+                self.find('play').visible = True
+                self.find('pause').visible = False
+
         except AttributeError:
             pass
-
-        if self.status.state == 'play':
-            self.find('play').visible = False
-            self.find('pause').visible = True
-
-        else:
-            self.find('play').visible = True
-            self.find('pause').visible = False
 
         self.binder.populate()
 
@@ -126,20 +128,33 @@ class MpdPlugin(SectionPlugin):
         self.mpd_do('clear')
         self.refresh()
 
-    def mpd_do(self, command, *args):
+    def mpd_do(self, command, *args, **kwargs):
         command = command.replace('_', ' ')
         try:
             return self._client._execute(command, args)
 
         except mpd.ConnectionError:
-            self.reconnect()
+            if not self.reconnect():
+                return kwargs.get('default', None)
             return self._client._execute(command, args)
 
+    _connected = True
     def reconnect(self):
         try:
             self._client.disconnect()
         except mpd.ConnectionError:
             pass
 
-        self._client.connect('127.0.0.1', 6600)
+        try:
+            self._client.connect('127.0.0.1', 6600)
+
+        except (IOError, mpd.ConnectionError) as e:
+            if self._connected:
+                self.context.notify('error', _('MPD connection failed with error: %s.<br>MPD is not running?') % str(e))
+                self._connected = False
+            return None
+
+        else:
+            self._connected = True
+
         return self._client
