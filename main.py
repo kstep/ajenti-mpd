@@ -155,6 +155,26 @@ class MpdPlugin(SectionPlugin):
         else:
             self.refresh()
 
+    @on('consume', 'click')
+    def toggleconsume(self):
+        self.mpd_do('consume', int(not self.status.consume))
+        self.refresh()
+
+    @on('single', 'click')
+    def togglesingle(self):
+        self.mpd_do('single', int(not self.status.single))
+        self.refresh()
+
+    @on('random', 'click')
+    def togglerandom(self):
+        self.mpd_do('random', int(not self.status.random))
+        self.refresh()
+
+    @on('repeat', 'click')
+    def togglerepeat(self):
+        self.mpd_do('repeat', int(not self.status.repeat))
+        self.refresh()
+
     @on('add', 'click')
     def open_add_dialog(self):
         self.find('add_dialog').visible = True
@@ -233,6 +253,12 @@ class MpdPlugin(SectionPlugin):
     #@on('reorder', 'click')
     #def reorder(self):
         #self.binder.update()
+
+    @on('update', 'click')
+    def update(self):
+        num = self.mpd_do('update')
+        if num:
+            self.context.notify('info', _('Update #%s started...') % num)
 
     @on('play', 'click')
     def play(self, song=None):
