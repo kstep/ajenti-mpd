@@ -3,16 +3,21 @@ from ajenti.plugins import *  # noqa
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
+from datetime import datetime
 import mpd
 import gevent
 
 ident = lambda x: x
+timestamp = lambda d: datetime.strptime(d, '%Y-%m-%dT%H:%M:%SZ')
+intbool = lambda v: bool(int(v))
+
 class Model(object):
     _cast = {}
 
     def __init__(self, data={}, **kwargs):
         data.update(kwargs)
         for k, v in data.iteritems():
+            k = k.replace('-', '_')
             setattr(self, k, self._cast.get(k, ident)(v))
 
     def get(self, name, default=None):
@@ -22,6 +27,14 @@ class Model(object):
         return repr(self.__dict__)
 
 class Song(Model):
+    _cast = {
+            'date': timestamp,
+            'last_modified': timestamp,
+            'pos': int,
+            'id': int,
+            'time': int,
+            }
+
     def __init__(self, data={}, **kwargs):
         if not isinstance(data, dict):
             data = {'title': str(data)}
@@ -34,7 +47,20 @@ class Song(Model):
 NO_SONG = Song()
 
 class Status(Model):
-    _cast = {'volume': int, 'song': int, 'songid': int}
+    _cast = {
+            'bitrate': int,
+            'consume': intbool,
+            'elapsed': float,
+            'mixrampdb': float,
+            'playlist': int,
+            'playlistlength': int,
+            'random': intbool,
+            'repeat': intbool,
+            'single': intbool,
+            'song': int,
+            'songid': int,
+            'volume': int,
+            }
 
 @plugin
 class MpdPlugin(SectionPlugin):
