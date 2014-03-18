@@ -141,22 +141,17 @@ class MpdPlugin(SectionPlugin):
     @on('refresh', 'click')
     def refresh(self):
         playlist, status, song, playlists, outputs = self.mpd_bulk_do(
-                'playlist',
+                'playlistinfo',
                 'status',
                 'currentsong',
                 'listplaylists',
                 'outputs',
                 defaults=([], {}, {}, [], []))
-        #self.playlist = map(lambda s: Song(pos=s[0], title=s[1]), enumerate(playlist))
+        self.playlist = map(Song, playlist)
         self.status = Status(status)
         self.song = Song(song)
         self.playlists = map(Playlist, playlists)
         self.outputs = map(Output, outputs)
-        self.playlist = map(lambda s: Song(s[1][0], pos=s[0]),
-                enumerate(self.mpd_bulk_do(
-                        it.imap(lambda s: ('lsinfo', s.split(': ')[1]), playlist),
-                        defaults=[{}] * len(playlist)
-                    ))) if playlist else []
 
         try:
             if self.status.get('state') == 'play':
@@ -213,7 +208,7 @@ class MpdPlugin(SectionPlugin):
 
     @on('play', 'click')
     def play(self, song=None):
-        if pos is None:
+        if song is None:
             self.mpd_do('play')
         else:
             self.mpd_do('playid', song.id)
