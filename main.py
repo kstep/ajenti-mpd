@@ -133,7 +133,8 @@ class MpdPlugin(SectionPlugin):
 
     def on_first_page_load(self):
         self.binder = Binder(self, self.find('mpd'))
-        self.context.session.spawn(self.worker)
+        self.refresh()
+        #self.context.session.spawn(self.worker)
 
     def worker(self):
         while True:
