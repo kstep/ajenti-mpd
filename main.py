@@ -7,6 +7,7 @@ from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from datetime import datetime
 from gevent.lock import Semaphore
+from itertools import izip, ifilter, imap
 import mpd
 import gevent
 
@@ -25,6 +26,9 @@ class Model(object):
 
     def get(self, name, default=None):
         return getattr(self, name, default)
+
+    def __setitem__(self, name, value):
+        setattr(self, name, value)
 
     def __repr__(self):
         return repr(self.__dict__)
@@ -120,6 +124,7 @@ class MpdPlugin(SectionPlugin):
 
         def post_playlist_bind(obj, collection, item, ui):
             ui.find('load').on('click', self.mpd_do, 'load', item.playlist)
+            ui.find('playlist').on('change', self.mpd_do, 'rename', item.playlist, ui.find('playlist').value)
 
         self.find('playlists').add_item = add_playlist
         self.find('playlists').delete_item = delete_playlist
@@ -129,6 +134,19 @@ class MpdPlugin(SectionPlugin):
             ui.find('enabled').on('click', self.toggleoutput, item)
 
         self.find('outputs').post_item_bind = post_output_bind
+
+    @on('rename', 'click')
+    def rename_playlists(self):
+        old_names = map(lambda p: p.playlist, self.playlists)
+        self.binder.update()
+        new_names = map(lambda p: p.playlist, self.playlists)
+
+        self.mpd_bulk_do(
+                imap(lambda p: ('rename',) + p,
+                    ifilter(lambda p: p[0] != p[1],
+                        izip(old_names, new_names))))
+
+        self.refresh()
 
 
     def on_first_page_load(self):

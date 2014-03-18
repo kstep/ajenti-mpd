@@ -72,6 +72,9 @@
 
                 <tab title="Playlists">
                     <bind:collection bind="playlists" id="playlists">
+                        <right>
+                            <button icon="save" id="rename" style="mini" text="{Rename}" />
+                        </right>
                         <hc>
                             <button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" />
                             <button icon="trash" id="clearpl" style="mini" text="{Delete}" />
@@ -87,7 +90,7 @@
                         <bind:template>
                             <dtr>
                                 <dtd><icon icon="music" /></dtd>
-                                <dtd><label bind="playlist" /></dtd>
+                                <dtd><editable id="playlist" bind="playlist" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append}"><button icon="plus" style="mini" id="load" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
