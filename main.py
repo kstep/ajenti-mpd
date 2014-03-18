@@ -120,12 +120,10 @@ class MpdPlugin(SectionPlugin):
                         )))
 
         try:
-            self.playlist[self.status.song] = self.song
-            self.song.icon = 'play'
-
-            if self.status.state == 'play':
+            if self.status.get('state') == 'play':
                 self.find('play').visible = False
                 self.find('pause').visible = True
+                self.playlist[self.status.song].icon = 'play'
 
             else:
                 self.find('play').visible = True
