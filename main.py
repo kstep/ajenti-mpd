@@ -33,6 +33,7 @@ class MpdPlugin(SectionPlugin):
         self.playlists = []
         self.outputs = []
         self.library = []
+        self.taxonomy = {'artists': [], 'albums': [], 'genres': [], 'artist': '', 'album': '', 'genre': ''}
         self.song = Song()
         self.status = Status()
 
@@ -81,9 +82,33 @@ class MpdPlugin(SectionPlugin):
     @on('tabs', 'switch')
     def tab_switch(self):
         if self.find('tabs').active == 2:  # library tab
-            self.library = imap(Song, ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo', default=[])))
+            #self.library = imap(Song, ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo', default=[])))
+            self.taxonomy.update(
+                    imap(lambda v: (v[0], ['* All ' + v[0] + ' *'] + v[1]),
+                    izip(
+                        ('artists', 'albums', 'genres'),
+                        self._mpd.bulk_do([
+                            ('list', 'artist'),
+                            ('list', 'album'),
+                            ('list', 'genre')
+                            ], defaults=([], [], [])))
+                        ))
             self.binder.populate()
 
+    @on('find', 'click')
+    def search(self):
+        self.binder.update()
+
+        filter = []
+        for f in ('artist', 'album', 'genre'):
+            if self.taxonomy[f] and not self.taxonomy[f].startswith('* All '):
+                filter.append(f)
+                filter.append(self.taxonomy[f])
+
+        self.library = imap(Song,
+                self._mpd.do('find', *filter) if filter
+                else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
+        self.binder.populate()
 
     @on('rename', 'click')
     def rename_playlists(self):

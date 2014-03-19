@@ -102,6 +102,22 @@
                 </tab>
 
                 <tab title="Library">
+                    <bind:dict bind="taxonomy">
+                        <hc>
+                            <tooltip text="{Artist}">
+                                <dropdown id="artist" bind="artist" bind:values="artists" bind:labels="artists" />
+                            </tooltip>
+                            <tooltip text="{Album}">
+                                <dropdown id="album" bind="album" bind:values="albums" bind:labels="albums" />
+                            </tooltip>
+                            <tooltip text="{Genre}">
+                                <dropdown id="genre" bind="genre" bind:values="genres" bind:labels="genres" />
+                            </tooltip>
+                            <indent>
+                                <button style="mini" icon="search" text="{Find}" id="find" />
+                            </indent>
+                        </hc>
+                    </bind:dict>
                     <bind:collection bind="library" id="library">
                         <dt bind="__items">
                             <dtr>
