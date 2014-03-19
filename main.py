@@ -95,8 +95,8 @@ class MpdPlugin(SectionPlugin):
                         ))
             self.binder.populate()
 
-    @on('find', 'click')
-    def search(self):
+    @on('search', 'click')
+    def search(self, add=False):
         self.binder.update()
 
         filter = []
@@ -105,10 +105,19 @@ class MpdPlugin(SectionPlugin):
                 filter.append(f)
                 filter.append(self.taxonomy[f])
 
+        if add and not filter:
+            self.context.notify('error', _('Can not add all library! Select some filters first.'))
+            return
+
         self.library = imap(Song,
-                self._mpd.do('find', *filter) if filter
+                (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
                 else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
         self.binder.populate()
+
+    @on('searchadd', 'click')
+    def searchadd(self):
+        self.search(add=True)
+        self.refresh()
 
     @on('rename', 'click')
     def rename_playlists(self):

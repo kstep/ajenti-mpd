@@ -46,7 +46,7 @@
                 <tab title="Now Playing">
                     <hc>
                         <button icon="plus" id="add" style="mini" text="{Add}" />
-                        <button icon="trash" id="clear" style="mini" text="{Delete}" />
+                        <button icon="trash" id="clear" style="mini" text="{Clear}" />
                     </hc>
 
                     <bind:collection bind="playlist" id="playlist">
@@ -77,7 +77,7 @@
                         </right>
                         <hc>
                             <button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" />
-                            <button icon="trash" id="clearpl" style="mini" text="{Delete}" />
+                            <button icon="trash" id="clearpl" style="mini" text="{Clear}" />
                         </hc>
 
                         <dt bind="__items">
@@ -114,7 +114,10 @@
                                 <dropdown id="genre" bind="genre" bind:values="genres" bind:labels="genres" />
                             </tooltip>
                             <indent>
-                                <button style="mini" icon="search" text="{Find}" id="find" />
+                                <hc>
+                                    <button style="mini" icon="search" text="{Search}" id="search" />
+                                    <button style="mini" icon="plus" text="{Add all}" id="searchadd" />
+                                </hc>
                             </indent>
                         </hc>
                     </bind:dict>
