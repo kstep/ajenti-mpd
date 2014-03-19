@@ -55,7 +55,7 @@ class MPD(object):
     def reconnect(self):
         try:
             self._client.disconnect()
-        except mpd.ConnectionError:
+        except (IOError, mpd.ConnectionError):
             pass
 
         try:

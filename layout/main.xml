@@ -28,10 +28,6 @@
                     <tooltip text="{Random}"><togglebutton icon="random" id="random" style="mini" bind:pressed="random" /></tooltip>
                     <tooltip text="{Single}"><togglebutton icon="lock" id="single" style="mini" bind:pressed="single" /></tooltip>
                     <tooltip text="{Consume}"><togglebutton icon="cut" id="consume" style="mini" bind:pressed="consume" /></tooltip>
-
-                    <indent>
-                        <button icon="hdd" id="update" style="mini" text="{Update}" />
-                    </indent>
                 </hc>
             </bind:dict>
 
@@ -81,7 +77,7 @@
                 <tab title="Playlists">
                     <bind:collection bind="playlists" id="playlists">
                         <right>
-                            <button icon="save" id="rename" style="mini" text="{Rename}" />
+                            <button icon="ok" id="rename" style="mini" text="{Rename}" />
                         </right>
                         <hc>
                             <button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" />
@@ -110,6 +106,17 @@
                 </tab>
 
                 <tab title="Library">
+                    <right>
+                        <hc>
+                            <indent>
+                                <hc>
+                                    <button style="mini" icon="search" text="{Search}" id="search" />
+                                    <button style="mini" icon="plus" text="{Add all}" id="searchadd" />
+                                </hc>
+                            </indent>
+                            <button icon="refresh" id="update" style="mini" text="{Update}" />
+                        </hc>
+                    </right>
                     <bind:dict bind="taxonomy">
                         <hc>
                             <tooltip text="{Artist}">
@@ -122,10 +129,6 @@
                                 <dropdown id="genre" bind="genre" bind:values="genres" bind:labels="genres" />
                             </tooltip>
                             <indent>
-                                <hc>
-                                    <button style="mini" icon="search" text="{Search}" id="search" />
-                                    <button style="mini" icon="plus" text="{Add all}" id="searchadd" />
-                                </hc>
                             </indent>
                         </hc>
                     </bind:dict>
