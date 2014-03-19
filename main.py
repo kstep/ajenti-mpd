@@ -2,98 +2,24 @@
 
 from ajenti.api import *  # noqa
 from ajenti.plugins import *  # noqa
+from ajenti.plugins.mpd.models import *  # noqa
+from ajenti.plugins.mpd.api import MPD, CommandError
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
-from datetime import datetime
-from gevent.lock import Semaphore
 from itertools import izip, ifilter, imap
-import mpd
-import gevent
-
-ident = lambda x: x
-intbool = lambda v: bool(int(v))
-time = lambda t: '%2d:%02d' % (int(t) / 60, int(t) % 60)
-
-def timestamp(d):
-    for pattern in (
-            '%Y-%m-%dT%H:%M:%SZ',
-            '%Y',
-            ):
-        try:
-            return datetime.strptime(d, pattern)
-        except ValueError:
-            continue
-    return d
-
-class Model(object):
-    _cast = {}
-
-    def __init__(self, data={}, **kwargs):
-        data.update(kwargs)
-        for k, v in data.iteritems():
-            k = k.replace('-', '_')
-            setattr(self, k, self._cast.get(k, ident)(v))
-
-    def get(self, name, default=None):
-        return getattr(self, name, default)
-
-    def __setitem__(self, name, value):
-        setattr(self, name, value)
-
-    def __repr__(self):
-        return repr(self.__dict__)
-
-class Output(Model):
-    _cast = {
-            'outputenabled': intbool,
-            'outputid': int,
-            }
-
-class Playlist(Model):
-    _cast = {'last_modified': timestamp}
-
-class Song(Model):
-    _cast = {
-            'date': timestamp,
-            'last_modified': timestamp,
-            'pos': int,
-            'id': int,
-            'time': time,
-            }
-
-    def __init__(self, data={}, **kwargs):
-        if not isinstance(data, dict):
-            data = {'title': str(data)}
-        else:
-            data.setdefault('title', '')
-
-        Model.__init__(self, data, **kwargs)
-        self.icon = 'music'
-
-NO_SONG = Song()
-
-class Status(Model):
-    _cast = {
-            'bitrate': int,
-            'consume': intbool,
-            'elapsed': float,
-            'mixrampdb': float,
-            'playlist': int,
-            'playlistlength': int,
-            'random': intbool,
-            'repeat': intbool,
-            'single': intbool,
-            'song': int,
-            'songid': int,
-            'volume': int,
-            }
+from gevent import sleep
 
 @plugin
 class MpdPlugin(SectionPlugin):
+    def bindui(self, ui_id, method_name):
+        def decorator(method):
+            setattr(self.find(ui_id), method_name, method)
+            return method
+        return decorator
+
     def init(self):
-        self._client = mpd.MPDClient()
-        self._client_lock = Semaphore()
+        self._mpd = MPD()
 
         # meta-data
         self.title = 'MPD'
@@ -107,57 +33,55 @@ class MpdPlugin(SectionPlugin):
         self.playlists = []
         self.outputs = []
         self.library = []
-        self.song = NO_SONG
+        self.song = Song()
         self.status = Status()
 
+        self.init_ui_bindings()
+
+
+    def init_ui_bindings(self):
+        @self.bindui('playlist', 'post_item_bind')
         def post_item_bind(obj, collection, item, ui):
             ui.find('play').on('click', self.play, item)
 
+        @self.bindui('playlist', 'delete_item')
         def delete_item(item, collection):
             self.remove(item)
 
-        self.find('playlist').post_item_bind = post_item_bind
-        self.find('playlist').delete_item = delete_item
-
+        @self.bindui('playlists', 'add_item')
         def add_playlist(item, collection):
             for i in xrange(1, 1000000):
                 try:
-                    self.mpd_do('save', 'Untitled %d' % i)
-                except mpd.CommandError:
+                    self._mpd.do('save', 'Untitled %d' % i)
+                except CommandError:
                     continue
                 else:
                     break
 
             self.refresh()
 
+        @self.bindui('playlists', 'delete_item')
         def delete_playlist(item, collection):
-            self.mpd_do('rm', item.playlist)
+            self._mpd.do('rm', item.playlist)
             self.refresh()
 
+        @self.bindui('playlists', 'post_item_bind')
         def post_playlist_bind(obj, collection, item, ui):
-            ui.find('load').on('click', self.mpd_do, 'load', item.playlist)
-            ui.find('clear').on('click', self.mpd_do, 'playlistclear', item.playlist)
+            ui.find('load').on('click', self._mpd.do, 'load', item.playlist)
+            ui.find('clear').on('click', self._mpd.do, 'playlistclear', item.playlist)
 
-        self.find('playlists').add_item = add_playlist
-        self.find('playlists').delete_item = delete_playlist
-        self.find('playlists').post_item_bind = post_playlist_bind
-
+        @self.bindui('outputs', 'post_item_bind')
         def post_output_bind(obj, collection, item, ui):
             ui.find('enabled').on('click', self.toggleoutput, item)
 
-        self.find('outputs').post_item_bind = post_output_bind
-
+        @self.bindui('library', 'post_item_bind')
         def post_library_bind(obj, collection, item, ui):
             ui.find('add').on('click', self.add, item.file)
 
-        self.find('library').post_item_bind = post_library_bind
-
-        self.tabs = self.find('tabs')
-
     @on('tabs', 'switch')
     def tab_switch(self):
-        if self.tabs.active == 2:  # library tab
-            self.library = imap(Song, ifilter(lambda s: 'file' in s, self.mpd_do('listallinfo')))
+        if self.find('tabs').active == 2:  # library tab
+            self.library = imap(Song, ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo', default=[])))
             self.binder.populate()
 
 
@@ -167,7 +91,7 @@ class MpdPlugin(SectionPlugin):
         self.binder.update()
         new_names = map(lambda p: p.playlist, self.playlists)
 
-        self.mpd_bulk_do(
+        self._mpd.bulk_do(
                 imap(lambda p: ('rename',) + p,
                     ifilter(lambda p: p[0] != p[1],
                         izip(old_names, new_names))))
@@ -183,7 +107,7 @@ class MpdPlugin(SectionPlugin):
     def worker(self):
         while True:
             self.refresh()
-            gevent.sleep(5)
+            sleep(5)
 
     def add(self, url):
         url = url.strip()
@@ -191,9 +115,9 @@ class MpdPlugin(SectionPlugin):
             return
 
         try:
-            self.mpd_do('addid', url)
+            self._mpd.do('addid', url)
 
-        except mpd.CommandError:
+        except CommandError:
             self.context.notify('error', _('Song "%s" not found') % url)
 
         else:
@@ -201,22 +125,22 @@ class MpdPlugin(SectionPlugin):
 
     @on('consume', 'click')
     def toggleconsume(self):
-        self.mpd_do('consume', int(not self.status.consume))
+        self._mpd.do('consume', int(not self.status.consume))
         self.refresh()
 
     @on('single', 'click')
     def togglesingle(self):
-        self.mpd_do('single', int(not self.status.single))
+        self._mpd.do('single', int(not self.status.single))
         self.refresh()
 
     @on('random', 'click')
     def togglerandom(self):
-        self.mpd_do('random', int(not self.status.random))
+        self._mpd.do('random', int(not self.status.random))
         self.refresh()
 
     @on('repeat', 'click')
     def togglerepeat(self):
-        self.mpd_do('repeat', int(not self.status.repeat))
+        self._mpd.do('repeat', int(not self.status.repeat))
         self.refresh()
 
     @on('add', 'click')
@@ -232,7 +156,7 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self):
-        playlist, status, song, playlists, outputs = self.mpd_bulk_do(
+        playlist, status, song, playlists, outputs = self._mpd.bulk_do(
                 'playlistinfo',
                 'status',
                 'currentsong',
@@ -264,17 +188,17 @@ class MpdPlugin(SectionPlugin):
         self.binder.populate()
 
     def toggleoutput(self, output):
-        self.mpd_do('disableoutput' if output.outputenabled else 'enableoutput', output.outputid)
+        self._mpd.do('disableoutput' if output.outputenabled else 'enableoutput', output.outputid)
         self.refresh()
 
     @on('voldown', 'click')
     def voldown(self, delta=10):
-        self.mpd_do('volume', -delta)
+        self._mpd.do('volume', -delta)
         self.refresh()
 
     @on('volup', 'click')
     def volup(self, delta=10):
-        self.mpd_do('volume', delta)
+        self._mpd.do('volume', delta)
         self.refresh()
 
     _last_volume = 0
@@ -287,11 +211,11 @@ class MpdPlugin(SectionPlugin):
             self.volume(0)
 
     def volume(self, value):
-        self.mpd_do('setvol', value)
+        self._mpd.do('setvol', value)
         self.refresh()
 
     def remove(self, song):
-        self.mpd_do('deleteid', song.id)
+        self._mpd.do('deleteid', song.id)
         self.refresh()
 
     #@on('reorder', 'click')
@@ -300,102 +224,41 @@ class MpdPlugin(SectionPlugin):
 
     @on('update', 'click')
     def update(self):
-        num = self.mpd_do('update')
+        num = self._mpd.do('update')
         if num:
             self.context.notify('info', _('Update #%s started...') % num)
 
     @on('play', 'click')
     def play(self, song=None):
         if song is None:
-            self.mpd_do('play')
+            self._mpd.do('play')
         else:
-            self.mpd_do('playid', song.id)
+            self._mpd.do('playid', song.id)
 
         self.refresh()
 
     @on('pause', 'click')
     def pause(self):
-        self.mpd_do('pause')
+        self._mpd.do('pause')
         self.refresh()
 
     @on('stop', 'click')
     def stop(self):
-        self.mpd_do('stop')
+        self._mpd.do('stop')
         self.refresh()
 
     @on('prev', 'click')
     def prev(self):
-        self.mpd_do('previous')
+        self._mpd.do('previous')
         self.refresh()
 
     @on('next', 'click')
     def next(self):
-        self.mpd_do('next')
+        self._mpd.do('next')
         self.refresh()
 
     @on('clear', 'click')
     def clear(self):
-        self.mpd_do('clear')
+        self._mpd.do('clear')
         self.refresh()
 
-    def mpd_bulk_do(self, *commands, **options):
-        if not commands:
-            return
-
-        if len(commands) == 1 and hasattr(commands[0], '__iter__'):
-            commands = commands[0]
-
-        retry = True
-        while True:
-            try:
-                with self._client_lock:
-                    self._client.command_list_ok_begin()
-
-                    for cmd in commands:
-                        if isinstance(cmd, basestring):
-                            args = ()
-                        else:
-                            cmd, args = cmd[0], cmd[1:]
-
-                        cmd = cmd.replace('_', ' ')
-                        self._client._execute(cmd, args)
-
-                    return tuple(self._client.command_list_end())
-
-            except mpd.ConnectionError:
-                if not (retry and self.reconnect()):
-                    return options.get('defaults') or ([None] * len(commands))
-                retry = False
-
-
-    def mpd_do(self, command, *args, **kwargs):
-        with self._client_lock:
-            command = command.replace('_', ' ')
-            try:
-                return self._client._execute(command, args)
-
-            except mpd.ConnectionError:
-                if not self.reconnect():
-                    return kwargs.get('default', None)
-                return self._client._execute(command, args)
-
-    _connected = True
-    def reconnect(self):
-        try:
-            self._client.disconnect()
-        except mpd.ConnectionError:
-            pass
-
-        try:
-            self._client.connect('127.0.0.1', 6600)
-
-        except (IOError, mpd.ConnectionError) as e:
-            if self._connected:
-                self.context.notify('error', _('MPD connection failed with error: %s.<br>MPD is not running?') % str(e))
-                self._connected = False
-            return None
-
-        else:
-            self._connected = True
-
-        return self._client
