@@ -30,6 +30,7 @@ class Song(Model):
 
         Model.__init__(self, data, **kwargs)
         self.icon = 'music'
+        self.present = bool(self.title)
 
 @public
 class Status(Model):

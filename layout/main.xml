@@ -36,9 +36,11 @@
             </bind:dict>
 
             <bind:dict bind="song">
-                <label text="Playing “" /><label bind="title" />
-                <label text="” from “" /><label bind="album" />
-                <label text="” by " /><label bind="artist" />
+                <box scroll="True" height="32" bind:visible="present">
+                    <label text="Playing “" /><label bind="title" />
+                    <label text="” from “" /><label bind="album" />
+                    <label text="” by " /><label bind="artist" />
+                </box>
             </bind:dict>
 
             <tabs id="tabs">
