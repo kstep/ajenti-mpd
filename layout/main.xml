@@ -43,8 +43,8 @@
 
                 <tab title="Now Playing">
                     <hc>
-                        <button icon="plus" id="add" style="mini" text="{Add}" />
-                        <button icon="trash" id="clear" style="mini" text="{Clear}" />
+                        <button icon="plus" id="add" style="mini" text="{Add URL}" />
+                        <button icon="trash" id="clear" style="mini" text="{Delete All}" />
                     </hc>
 
                     <bind:collection bind="playlist" id="playlist">
@@ -80,15 +80,15 @@
                             <button icon="ok" id="rename" style="mini" text="{Rename}" />
                         </right>
                         <hc>
-                            <button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" />
-                            <button icon="trash" id="clearpl" style="mini" text="{Clear}" />
+                            <tooltip text="{Create new playlist from Now Playing}"><button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" /></tooltip>
+                            <button icon="trash" id="clearpl" style="mini" text="{Delete All}" />
                         </hc>
 
                         <dt bind="__items">
                             <dtr>
                                 <dth width="1%" />
                                 <dth text="{Name}" />
-                                <dth width="90" text="{Action}" />
+                                <dth width="60" text="{Action}" />
                             </dtr>
                         </dt>
                         <bind:template>
@@ -96,8 +96,7 @@
                                 <dtd><icon icon="music" /></dtd>
                                 <dtd><editable id="playlist" bind="playlist" /></dtd>
                                 <dtd>
-                                    <tooltip text="{Append}"><button icon="plus" style="mini" id="load" /></tooltip>
-                                    <tooltip text="{Clear}"><button icon="trash" id="clear" style="mini" /></tooltip>
+                                    <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="load" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
                                 </dtd>
                             </dtr>
@@ -111,10 +110,10 @@
                             <indent>
                                 <hc>
                                     <button style="mini" icon="search" text="{Search}" id="search" />
-                                    <button style="mini" icon="plus" text="{Add all}" id="searchadd" />
+                                    <tooltip text="{Search and add results to Now Playing}"><button style="mini" icon="play-sign" text="{Add Found}" id="searchadd" /></tooltip>
                                 </hc>
                             </indent>
-                            <button icon="refresh" id="update" style="mini" text="{Update}" />
+                            <tooltip text="{Update music database}"><button icon="refresh" id="update" style="mini" text="{Update}" /></tooltip>
                         </hc>
                     </right>
                     <bind:dict bind="taxonomy">
@@ -151,7 +150,7 @@
                                 <dtd><label bind="genre" /></dtd>
                                 <dtd><label bind="time" /></dtd>
                                 <dtd>
-                                    <tooltip text="{Append}"><button icon="plus" style="mini" id="add" /></tooltip>
+                                    <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="add" /></tooltip>
                                 </dtd>
                             </dtr>
                         </bind:template>

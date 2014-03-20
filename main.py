@@ -69,7 +69,7 @@ class MpdPlugin(SectionPlugin):
         @self.bindui('playlists', 'post_item_bind')
         def post_playlist_bind(obj, collection, item, ui):
             ui.find('load').on('click', lambda *args: self._mpd.do(*args) or self.refresh(), 'load', item.playlist)
-            ui.find('clear').on('click', self._mpd.do, 'playlistclear', item.playlist)
+            #ui.find('clear').on('click', self._mpd.do, 'playlistclear', item.playlist)
 
         @self.bindui('outputs', 'post_item_bind')
         def post_output_bind(obj, collection, item, ui):
