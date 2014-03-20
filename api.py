@@ -52,11 +52,24 @@ class MPD(object):
         self._host, self._port = host, port
         self._client, self._lock = mpd.MPDClient(), Semaphore(1)
 
+    def disconnect(self):
+        while True:
+            try:
+                self._client.disconnect()
+
+            # already disconnected, ignore it
+            except mpd.ConnectionError:
+                pass
+
+            # happens when connection is timed out,
+            # need to disconnect again
+            except IOError:
+                continue
+
+            break
+
     def reconnect(self):
-        try:
-            self._client.disconnect()
-        except (IOError, mpd.ConnectionError):
-            pass
+        self.disconnect()
 
         try:
             self._client.connect(self._host, self._port)
@@ -88,7 +101,7 @@ class MPD(object):
 
                     return tuple(self._client.command_list_end())
 
-            except mpd.ConnectionError:
+            except (mpd.ConnectionError, mpd.CommandListError, IOError):
                 if not self.reconnect():
                     break
 
@@ -102,11 +115,9 @@ class MPD(object):
                 with self._lock:
                     return self._client._execute(command, args)
 
-            except mpd.ConnectionError:
+            except (mpd.ConnectionError, IOError):
                 if not self.reconnect():
                     break
 
         return kwargs.get('default', None)
-
-
 
