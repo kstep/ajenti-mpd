@@ -25,7 +25,7 @@
                     <tooltip text="{Repeat}"><togglebutton icon="repeat" id="repeat" style="mini" bind:pressed="repeat" /></tooltip>
                     <tooltip text="{Random}"><togglebutton icon="random" id="random" style="mini" bind:pressed="random" /></tooltip>
                     <tooltip text="{Single}"><togglebutton icon="lock" id="single" style="mini" bind:pressed="single" /></tooltip>
-                    <tooltip text="{Consume}"><togglebutton icon="cut" id="consume" style="mini" bind:pressed="consume" /></tooltip>
+                    <tooltip text="{Consume}"><togglebutton icon="eraser" id="consume" style="mini" bind:pressed="consume" /></tooltip>
                     <indent>
                         <hc>
                             <label bind="time_ticker" />
@@ -102,7 +102,7 @@
                         </dt>
                         <bind:template>
                             <dtr>
-                                <dtd><icon icon="music" /></dtd>
+                                <dtd><icon icon="list" /></dtd>
                                 <dtd><editable id="playlist" bind="playlist" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="load" /></tooltip>
