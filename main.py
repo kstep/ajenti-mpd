@@ -109,7 +109,7 @@ class MpdPlugin(SectionPlugin):
             self.context.notify('error', _('Can not add all library! Select some filters first.'))
             return
 
-        self.library = imap(Song,
+        self.library = map(Song,
                 (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
                 else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
         self.binder.populate()

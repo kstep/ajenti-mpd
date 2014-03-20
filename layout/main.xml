@@ -132,7 +132,7 @@
                             </indent>
                         </hc>
                     </bind:dict>
-                    <bind:collection bind="library" id="library">
+                    <bind:collection bind="library" id="library" pagesize="20">
                         <dt bind="__items">
                             <dtr>
                                 <dth width="1%" />
@@ -143,7 +143,6 @@
                                 <dth width="60" text="{Action}" />
                             </dtr>
                         </dt>
-                        <hc bind="__paging" />
                         <bind:template>
                             <dtr>
                                 <dtd><icon icon="music" /></dtd>
@@ -156,6 +155,9 @@
                                 </dtd>
                             </dtr>
                         </bind:template>
+                        <right>
+                            <paging bind="__paging" />
+                        </right>
                     </bind:collection>
                 </tab>
 
