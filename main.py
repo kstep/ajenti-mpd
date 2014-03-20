@@ -10,6 +10,8 @@ from ajenti.ui import on
 from itertools import izip, ifilter, imap, count
 from gevent import sleep
 from urllib2 import urlopen
+from contextlib import closing
+import os
 
 @plugin
 class MpdPlugin(SectionPlugin):
@@ -148,9 +150,19 @@ class MpdPlugin(SectionPlugin):
         if not urls:
             return
 
-        urls = ifilter(None, imap(str.strip, imap(str, urls)))
-        urls = imap(lambda url: ifilter(None, imap(str.strip, urlopen(url).read().splitlines())) if
-                url.endswith('.m3u') else (url,), urls)
+        def readfile(url):
+            with closing(urlopen(url) if url.startswith(('http://', 'https://')) else open(url, 'r')) as f:
+                return f.read().splitlines()
+
+        clean_playlist = lambda lines: ifilter(None, imap(str.strip, imap(str, lines)))
+        parse_null = lambda url: (url,)
+
+        parsers = {
+                '.m3u': lambda url: ifilter(lambda line: not line.startswith('#'), readfile(url)),
+                '.pls': lambda url: imap(lambda line: line.split('=')[1], ifilter(lambda line: line.startswith('File'), readfile(url))),
+                }
+
+        urls = imap(lambda url: clean_playlist(parsers.get(os.path.splitext(url)[1], parse_null)(url)), urls)
 
         cmds = (('addid', url) for _ in urls for url in _)
 
@@ -158,7 +170,7 @@ class MpdPlugin(SectionPlugin):
             self._mpd.bulk_do(cmds)
 
         except CommandError:
-            self.context.notify('error', _('Songs "%s" not found') % '", "'.join(urls))
+            self.context.notify('error', _('Songs not found'))
 
         else:
             self.refresh()
