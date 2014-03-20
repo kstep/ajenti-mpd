@@ -32,10 +32,13 @@
             </bind:dict>
 
             <bind:dict bind="song">
-                <box scroll="True" height="32" bind:visible="present">
+                <box scroll="True" height="32" bind:visible="isfile">
                     <label text="Playing “" /><label bind="title" style="bold" />
                     <label text="” from “" /><label bind="album" style="bold" />
                     <label text="” by " /><label bind="artist" style="bold" />
+                </box>
+                <box scroll="True" height="32" bind:visible="isstream">
+                    <label text="Playing “" /><label bind="name" style="bold" /><label text="”" />
                 </box>
             </bind:dict>
 
@@ -62,7 +65,7 @@
                             <dtr>
                                 <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
-                                <dtd><label bind="title" /></dtd>
+                                <dtd><label bind="title" /><lable bind="name" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
                                 <dtd><label bind="time" /></dtd>
                                 <dtd>

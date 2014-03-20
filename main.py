@@ -9,6 +9,7 @@ from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from itertools import izip, ifilter, imap, count
 from gevent import sleep
+from urllib2 import urlopen
 
 @plugin
 class MpdPlugin(SectionPlugin):
@@ -143,16 +144,21 @@ class MpdPlugin(SectionPlugin):
             self.refresh()
             sleep(5)
 
-    def add(self, url):
-        url = url.strip()
-        if not url:
+    def add(self, *urls):
+        if not urls:
             return
 
+        urls = ifilter(None, imap(str.strip, imap(str, urls)))
+        urls = imap(lambda url: ifilter(None, imap(str.strip, urlopen(url).read().splitlines())) if
+                url.endswith('.m3u') else (url,), urls)
+
+        cmds = (('addid', url) for _ in urls for url in _)
+
         try:
-            self._mpd.do('addid', url)
+            self._mpd.bulk_do(cmds)
 
         except CommandError:
-            self.context.notify('error', _('Song "%s" not found') % url)
+            self.context.notify('error', _('Songs "%s" not found') % '", "'.join(urls))
 
         else:
             self.refresh()
@@ -186,7 +192,7 @@ class MpdPlugin(SectionPlugin):
         dialog = self.find('add_dialog')
         dialog.visible = False
         if button == 'add':
-            self.add(dialog.find('new_song_url').value)
+            self.add(*dialog.find('new_song_url').value.strip().splitlines())
 
     @on('refresh', 'click')
     def refresh(self):

@@ -30,6 +30,10 @@ class Model(object):
         for k, v in data.iteritems():
             k = k.replace('-', '_')
             setattr(self, k, self._cast.get(k, ident)(v))
+        self.init()
+
+    def init(self):
+        pass
 
     def get(self, name, default=None):
         return getattr(self, name, default)

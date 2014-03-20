@@ -22,15 +22,10 @@ class Song(Model):
             'time': time,
             }
 
-    def __init__(self, data={}, **kwargs):
-        if not isinstance(data, dict):
-            data = {'title': str(data)}
-        else:
-            data.setdefault('title', '')
-
-        Model.__init__(self, data, **kwargs)
+    def init(self):
         self.icon = 'music'
-        self.present = bool(self.title)
+        self.isfile = bool(self.get('title'))
+        self.isstream = bool(self.get('name'))
 
 @public
 class Status(Model):
