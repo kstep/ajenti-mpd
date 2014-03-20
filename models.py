@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from ajenti.util import public
 from ajenti.plugins.mpd.api import *  # noqa
 
@@ -23,9 +24,15 @@ class Song(Model):
             }
 
     def init(self):
-        self.icon = 'music'
         self.isfile = bool(self.get('title'))
         self.isstream = bool(self.get('name'))
+
+        if self.isstream:
+            self.time = u'\u221E'
+            self.icon = 'signal'
+
+        else:
+            self.icon = 'music'
 
 @public
 class Status(Model):
