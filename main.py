@@ -7,7 +7,7 @@ from ajenti.plugins.mpd.api import MPD, CommandError
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
-from itertools import izip, ifilter, imap
+from itertools import izip, ifilter, imap, count
 from gevent import sleep
 
 @plugin
@@ -51,7 +51,7 @@ class MpdPlugin(SectionPlugin):
 
         @self.bindui('playlists', 'add_item')
         def add_playlist(item, collection):
-            for i in xrange(1, 1000000):
+            for i in count(1):
                 try:
                     self._mpd.do('save', 'Untitled %d' % i)
                 except CommandError:
