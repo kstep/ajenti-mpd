@@ -222,7 +222,7 @@ class MpdPlugin(SectionPlugin):
         self.outputs = map(Output, outputs)
 
         try:
-            if self.status.get('state') == 'play':
+            if self.status.is_playing:
                 self.find('play').visible = False
                 self.find('pause').visible = True
                 self.playlist[self.status.song].icon = 'play'
@@ -230,9 +230,6 @@ class MpdPlugin(SectionPlugin):
             else:
                 self.find('play').visible = True
                 self.find('pause').visible = False
-
-            self.status.pvolume = self.status.volume / 100.0
-            self.status.muted = self.status.volume == 0
 
         except AttributeError:
             pass
@@ -256,7 +253,7 @@ class MpdPlugin(SectionPlugin):
     _last_volume = 0
     @on('mute', 'click')
     def mute(self):
-        if self.status.volume == 0:
+        if self.status.muted:
             self.volume(self._last_volume)
         else:
             self._last_volume = self.status.volume

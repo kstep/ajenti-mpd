@@ -7,7 +7,7 @@ import mpd
 __all__ = ['ident', 'intbool', 'time', 'timestamp', 'CommandError']
 ident = lambda x: x
 intbool = lambda v: bool(int(v))
-time = lambda t: '%2d:%02d' % (int(t) / 60, int(t) % 60)
+time = lambda t: '%2d:%02d' % (int(t or 0) / 60, int(t or 0) % 60)
 
 @public
 def timestamp(d):
@@ -24,12 +24,19 @@ def timestamp(d):
 @public
 class Model(object):
     _cast = {}
+    _defaults = {}
 
     def __init__(self, data={}, **kwargs):
         data.update(kwargs)
+
         for k, v in data.iteritems():
             k = k.replace('-', '_')
             setattr(self, k, self._cast.get(k, ident)(v))
+
+        for k, v in self._defaults.iteritems():
+            if not hasattr(self, k):
+                setattr(self, k, v)
+
         self.init()
 
     def init(self):

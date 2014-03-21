@@ -18,8 +18,6 @@
                                 <tooltip text="{Next}"><button icon="step-forward" id="next" style="mini" /></tooltip>
                             </hc>
                         </indent>
-
-                        <tooltip text="{Refresh}"><button icon="refresh" id="refresh" style="mini" /></tooltip>
                     </hc>
                 </right>
 
@@ -28,16 +26,24 @@
                     <tooltip text="{Random}"><togglebutton icon="random" id="random" style="mini" bind:pressed="random" /></tooltip>
                     <tooltip text="{Single}"><togglebutton icon="lock" id="single" style="mini" bind:pressed="single" /></tooltip>
                     <tooltip text="{Consume}"><togglebutton icon="cut" id="consume" style="mini" bind:pressed="consume" /></tooltip>
+                    <indent>
+                        <hc>
+                            <label bind="time_ticker" />
+                            <progressbar bind="progress" width="120" />
+                            <tooltip text="{Refresh}"><button icon="refresh" id="refresh" style="mini" /></tooltip>
+                            <tooltip text="{Autorefresh}"><button icon="time" id="autorefresh" style="mini" /></tooltip>
+                        </hc>
+                    </indent>
                 </hc>
             </bind:dict>
 
             <bind:dict bind="song">
-                <box scroll="True" height="32" bind:visible="isfile">
+                <box scroll="True" height="32" bind:visible="is_file">
                     <label text="Playing “" /><label bind="title" style="bold" />
                     <label text="” from “" /><label bind="album" style="bold" />
                     <label text="” by " /><label bind="artist" style="bold" />
                 </box>
-                <box scroll="True" height="32" bind:visible="isstream">
+                <box scroll="True" height="32" bind:visible="is_stream">
                     <label text="Playing “" /><label bind="name" style="bold" /><label text="”" />
                 </box>
             </bind:dict>
@@ -65,9 +71,9 @@
                             <dtr>
                                 <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
-                                <dtd><label bind="title" /><lable bind="name" /></dtd>
+                                <dtd><label bind="title" /><label bind="name" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
-                                <dtd><label bind="time" /></dtd>
+                                <dtd><label bind="time_str" /></dtd>
                                 <dtd>
                                     <tooltip text="{Play}"><button icon="play" id="play" style="mini" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
@@ -147,11 +153,11 @@
                         </dt>
                         <bind:template>
                             <dtr>
-                                <dtd><icon icon="music" /></dtd>
+                                <dtd><icon icon="list" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
                                 <dtd><label bind="title" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
-                                <dtd><label bind="time" /></dtd>
+                                <dtd><label bind="time_str" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="add" /></tooltip>
                                 </dtd>
