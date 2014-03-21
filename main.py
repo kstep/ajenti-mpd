@@ -3,7 +3,7 @@
 from ajenti.api import *  # noqa
 from ajenti.plugins import *  # noqa
 from ajenti.plugins.mpd.models import *  # noqa
-from ajenti.plugins.mpd.api import MPD, CommandError
+from ajenti.plugins.mpd.api import MPD, CommandError, flatten
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
@@ -32,13 +32,15 @@ class MpdPlugin(SectionPlugin):
         self.append(self.ui.inflate('mpd:main'))
 
         # data-bindings
+        self.status = Status.EMPTY
+        self.song = Song.EMPTY
+
         self.playlist = []
         self.playlists = []
         self.outputs = []
+
+        self.taxonomy = Taxonomy.EMPTY
         self.library = []
-        self.taxonomy = {'artists': [], 'albums': [], 'genres': [], 'artist': '', 'album': '', 'genre': ''}
-        self.song = Song()
-        self.status = Status()
 
         self.init_ui_bindings()
 
@@ -86,7 +88,7 @@ class MpdPlugin(SectionPlugin):
     def tab_switch(self):
         if self.find('tabs').active == 2:  # library tab
             #self.library = imap(Song, ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo', default=[])))
-            self.taxonomy.update(
+            self.taxonomy = Taxonomy(
                     imap(lambda v: (v[0], ['* All ' + v[0] + ' *'] + v[1]),
                     izip(
                         ('artists', 'albums', 'genres'),
@@ -94,8 +96,7 @@ class MpdPlugin(SectionPlugin):
                             ('list', 'artist'),
                             ('list', 'album'),
                             ('list', 'genre')
-                            ], defaults=([], [], [])))
-                        ))
+                            ], defaults=([], [], [])))))
             self.binder.populate()
 
     @on('search', 'click')
@@ -112,9 +113,10 @@ class MpdPlugin(SectionPlugin):
             self.context.notify('error', _('Can not add all library! Select some filters first.'))
             return
 
-        self.library = map(Song,
-                (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
+        self.library = map(Song, (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
                 else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
+        print ('LIBRARY', self.library)
+
         self.binder.populate()
 
     @on('searchadd', 'click')
@@ -143,15 +145,24 @@ class MpdPlugin(SectionPlugin):
 
 
     def on_first_page_load(self):
-        self.binder = Binder(self, self.find('mpd'))
+        self.binder = Binder(None, self.find('mpd'))
+        self.binder.setup(self)
         self.refresh()
-        self.context.session.spawn(self.worker)
+        #self.context.session.spawn(self.worker)
 
     def worker(self):
         while True:
             if self._autorefresh:
                 self.refresh()
-            sleep(3)
+                sleep(3)
+            else:
+                self.refresh(self._mpd.wait((
+                    MPD.EV_QUEUE_CHANGED,
+                    MPD.EV_PLAYLIST_CHANGED,
+                    MPD.EV_VOLUME_CHANGED,
+                    MPD.EV_OPTIONS_CHANGED,
+                    MPD.EV_PLAYER_CHANGED,
+                    MPD.EV_OUTPUT_CHANGED)))
 
     def add(self, *urls):
         if not urls:
@@ -169,9 +180,9 @@ class MpdPlugin(SectionPlugin):
                 '.pls': lambda url: imap(lambda line: line.split('=')[1], ifilter(lambda line: line.startswith('File'), readfile(url))),
                 }
 
-        urls = imap(lambda url: clean_playlist(parsers.get(os.path.splitext(url)[1], parse_null)(url)), urls)
+        urls = flatten(imap(lambda url: clean_playlist(parsers.get(os.path.splitext(url)[1], parse_null)(url)), urls))
 
-        cmds = (('addid', url) for _ in urls for url in _)
+        cmds = imap(lambda url: ('addid', url), urls)
 
         try:
             self._mpd.bulk_do(cmds)
@@ -214,32 +225,53 @@ class MpdPlugin(SectionPlugin):
             self.add(*dialog.find('new_song_url').value.strip().splitlines())
 
     @on('refresh', 'click')
-    def refresh(self):
-        playlist, status, song, playlists, outputs = self._mpd.bulk_do(
-                'playlistinfo',
-                'status',
-                'currentsong',
-                'listplaylists',
-                'outputs',
-                defaults=([], {}, {}, [], []))
-        self.playlist = map(Song, playlist)
-        self.status = Status(status)
-        self.song = Song(song)
-        self.playlists = map(Playlist, playlists)
-        self.outputs = map(Output, outputs)
+    def refresh(self, areas=()):
+        update = ['playlistinfo', 'status', 'currentsong', 'listplaylists', 'outputs']
+        defaults = [[], Status.EMPTY, Song.EMPTY, [], []]
+        #if not areas:
+            #update = ['playlistinfo', 'status', 'currentsong', 'listplaylists', 'outputs']
+            #defaults = [[], Status.EMPTY, Song.EMPTY, [], []]
 
-        try:
-            if self.status.is_playing:
-                self.find('play').visible = False
-                self.find('pause').visible = True
-                self.playlist[self.status.song].icon = 'play'
+        #else:
+            #update = list(set(ifilter(bool, flatten(
+                #('playlistinfo',) if area in (MPD.EV_QUEUE_CHANGED,) else
+                #('listplaylists',) if area in (MPD.EV_PLAYLIST_CHANGED,) else
+                #('status',) if area in (MPD.EV_VOLUME_CHANGED, MPD.EV_OPTIONS_CHANGED) else
+                #('status', 'currentsong') if area in (MPD.EV_PLAYER_CHANGED,) else
+                #('outputs',) if area in (MPD.EV_OUTPUT_CHANGED,) else
+                #None
+                #for area in areas))))
 
-            else:
-                self.find('play').visible = True
-                self.find('pause').visible = False
+            #defaults = map(lambda n: {} if n in ('status', 'currentsong') else [], update)
 
-        except AttributeError:
-            pass
+        data = UpdateInfo(izip(update,
+            self._mpd.bulk_do(*update, defaults=defaults)))
+
+        print data
+
+        for key in update:
+            setattr(self, {
+                'playlistinfo': 'playlist',
+                'listplaylists': 'playlists',
+                'currentsong': 'song',
+                }.get(key, key),
+                getattr(data, key))
+
+        print ('UPDATED', self.playlist)
+
+        if 'status' in update:
+            try:
+                if self.status.is_playing:
+                    self.find('play').visible = False
+                    self.find('pause').visible = True
+                    self.playlist[self.status.song].icon = 'play'
+
+                else:
+                    self.find('play').visible = True
+                    self.find('pause').visible = False
+
+            except AttributeError:
+                pass
 
         self.binder.populate()
 

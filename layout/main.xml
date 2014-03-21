@@ -29,7 +29,7 @@
                     <indent>
                         <hc>
                             <label bind="time_ticker" />
-                            <progressbar bind="progress" width="120" />
+                            <indent><progressbar bind="progress" width="120" /></indent>
                             <tooltip text="{Refresh}"><button icon="refresh" id="refresh" style="mini" /></tooltip>
                             <tooltip text="{Autorefresh}"><togglebutton icon="time" id="autorefresh" style="mini" /></tooltip>
                         </hc>
@@ -89,7 +89,7 @@
                             <button icon="ok" id="rename" style="mini" text="{Rename}" />
                         </right>
                         <hc>
-                            <tooltip text="{Create new playlist from Now Playing}"><button icon="plus" id="addpl" bind="__add" style="mini" text="{Add}" /></tooltip>
+                            <tooltip text="{Create new playlist from Now Playing}"><button icon="plus" bind="__add" style="mini" text="{Add}" /></tooltip>
                             <button icon="trash" id="clearpl" style="mini" text="{Delete All}" />
                         </hc>
 
@@ -103,7 +103,7 @@
                         <bind:template>
                             <dtr>
                                 <dtd><icon icon="list" /></dtd>
-                                <dtd><editable id="playlist" bind="playlist" /></dtd>
+                                <dtd><editable bind="playlist" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="load" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
@@ -128,13 +128,13 @@
                     <bind:dict bind="taxonomy">
                         <hc>
                             <tooltip text="{Artist}">
-                                <dropdown id="artist" bind="artist" bind:values="artists" bind:labels="artists" />
+                                <dropdown bind="artist" bind:values="artists" bind:labels="artists" />
                             </tooltip>
                             <tooltip text="{Album}">
-                                <dropdown id="album" bind="album" bind:values="albums" bind:labels="albums" />
+                                <dropdown bind="album" bind:values="albums" bind:labels="albums" />
                             </tooltip>
                             <tooltip text="{Genre}">
-                                <dropdown id="genre" bind="genre" bind:values="genres" bind:labels="genres" />
+                                <dropdown bind="genre" bind:values="genres" bind:labels="genres" />
                             </tooltip>
                             <indent>
                             </indent>
@@ -153,7 +153,7 @@
                         </dt>
                         <bind:template>
                             <dtr>
-                                <dtd><icon icon="list" /></dtd>
+                                <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
                                 <dtd><label bind="title" /></dtd>
                                 <dtd><label bind="genre" /></dtd>

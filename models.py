@@ -4,23 +4,24 @@ from ajenti.plugins.mpd.api import *  # noqa
 
 @public
 class Output(Model):
-    _cast = {
+    _casts = {
             'outputenabled': intbool,
             'outputid': int,
             }
 
 @public
 class Playlist(Model):
-    _cast = {'last_modified': timestamp}
+    _casts = {'last_modified': timestamp}
 
 @public
 class Song(Model):
-    _cast = {
+    _casts = {
             'date': timestamp,
             'last_modified': timestamp,
             'pos': int,
             'id': int,
             'time': int,
+            'genre': lambda g: ', '.join(set(g)) if isinstance(g, list) else g
             }
     _defaults = {
             'time': None,
@@ -40,7 +41,7 @@ class Song(Model):
 
 @public
 class Status(Model):
-    _cast = {
+    _casts = {
             'bitrate': int,
             'consume': intbool,
             'elapsed': float,
@@ -68,7 +69,7 @@ class Status(Model):
             self.progress = float(self.play_time) / float(self.total_time)
             self.time_ticker = '%s / %s' % (self.play_time_str, self.total_time_str)
 
-        except (AttributeError, ValueError):
+        except (AttributeError, ValueError, TypeError):
             self.total_time, self.play_time = None, None
             self.total_time_str, self.play_time_str = None, None
             self.time, self.progress = None, None
@@ -84,4 +85,55 @@ class Status(Model):
 
         self.pvolume = self.volume / 100.0
         self.muted = self.volume == 0
+
+@public
+class Stats(Model):
+    _casts = {
+            'albums': int,
+            'artists': int,
+            'db_playtime': int,
+            'db_update': unixtime,
+            'playtime': int,
+            'uptime': int,
+            }
+
+    def init(self):
+        self.uptime_str = time(self.uptime)
+        self.playtime_str = time(self.playtime)
+        self.db_playtime_str = time(self.db_playtime)
+
+@public
+class UpdateInfo(Model):
+    _casts = {
+            'status': Status,
+            'currentsong': Song,
+            'playlistinfo': listof(Song),
+            'listplaylists': listof(Playlist),
+            'outputs': listof(Output),
+            }
+
+    _defaults = {
+            'status': Status.EMPTY,
+            'currentsong': Song.EMPTY,
+            'playlistinfo': [],
+            'listplaylists': [],
+            'outputs': [],
+            }
+
+@public
+class Taxonomy(Model):
+    _casts = {
+            'artists': listof(str),
+            'albums': listof(str),
+            'genres': listof(str),
+            }
+
+    _defaults = {
+            'artists': [],
+            'albums': [],
+            'genres': [],
+            'artist': '',
+            'album': '',
+            'genre': '',
+            }
 
