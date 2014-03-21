@@ -1,0 +1,12 @@
+<hc id="mpd">
+    <box width="20">
+        <icon icon="music" />
+    </box>
+    <bind:dict bind="song">
+        <vc>
+            <label bind="title" />
+            <label bind="album" />
+            <label bind="artist" />
+        </vc>
+    </bind:dict>
+</hc>
