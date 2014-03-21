@@ -122,6 +122,12 @@ class MpdPlugin(SectionPlugin):
         self.search(add=True)
         self.refresh()
 
+    _autorefresh = False
+    @on('autorefresh', 'click')
+    def toggleautorefresh(self):
+        self._autorefresh = not self._autorefresh
+        self.find('autorefresh').pressed = self._autorefresh
+
     @on('rename', 'click')
     def rename_playlists(self):
         old_names = map(lambda p: p.playlist, self.playlists)
@@ -139,12 +145,13 @@ class MpdPlugin(SectionPlugin):
     def on_first_page_load(self):
         self.binder = Binder(self, self.find('mpd'))
         self.refresh()
-        #self.context.session.spawn(self.worker)
+        self.context.session.spawn(self.worker)
 
     def worker(self):
         while True:
-            self.refresh()
-            sleep(5)
+            if self._autorefresh:
+                self.refresh()
+            sleep(3)
 
     def add(self, *urls):
         if not urls:

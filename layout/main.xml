@@ -31,7 +31,7 @@
                             <label bind="time_ticker" />
                             <progressbar bind="progress" width="120" />
                             <tooltip text="{Refresh}"><button icon="refresh" id="refresh" style="mini" /></tooltip>
-                            <tooltip text="{Autorefresh}"><button icon="time" id="autorefresh" style="mini" /></tooltip>
+                            <tooltip text="{Autorefresh}"><togglebutton icon="time" id="autorefresh" style="mini" /></tooltip>
                         </hc>
                     </indent>
                 </hc>
