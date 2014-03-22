@@ -23,8 +23,6 @@ def fixutf8(value):
         raw = utf8.encode('raw_unicode_escape')
         encoding = chardet.detect(raw)['encoding']
 
-        print (encoding, repr(value))
-
         return (utf8 if encoding == 'ascii' else
                 raw.decode({
                     'MacCyrillic': 'windows-1251',

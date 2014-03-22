@@ -115,7 +115,6 @@ class MpdPlugin(SectionPlugin):
 
         self.library = map(Song, (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
                 else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
-        print ('LIBRARY', self.library)
 
         self.binder.populate()
 
@@ -247,8 +246,6 @@ class MpdPlugin(SectionPlugin):
         data = UpdateInfo(izip(update,
             self._mpd.bulk_do(*update, defaults=defaults)))
 
-        print data
-
         for key in update:
             setattr(self, {
                 'playlistinfo': 'playlist',
@@ -256,8 +253,6 @@ class MpdPlugin(SectionPlugin):
                 'currentsong': 'song',
                 }.get(key, key),
                 getattr(data, key))
-
-        print ('UPDATED', self.playlist)
 
         if 'status' in update:
             try:
