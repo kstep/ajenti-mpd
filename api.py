@@ -4,6 +4,7 @@ from datetime import datetime
 from mpd import CommandError
 from itertools import chain, imap
 import mpd
+import chardet
 
 __all__ = ['ident', 'intbool', 'time', 'unixtime', 'listof', 'CommandError']
 ident = lambda x: x
@@ -11,6 +12,28 @@ intbool = lambda v: bool(int(v))
 time = lambda t: '%2d:%02d' % (int(t or 0) / 60, int(t or 0) % 60)
 unixtime = lambda t: datetime.fromtimestamp(int(t))
 listof = lambda cast: lambda lst: map(cast, lst)
+
+@public
+def fixutf8(value):
+    if not value:
+        return u''
+
+    try:
+        utf8 = value.decode('utf-8')
+        raw = utf8.encode('raw_unicode_escape')
+        encoding = chardet.detect(raw)['encoding']
+
+        print (encoding, repr(value))
+
+        return (utf8 if encoding == 'ascii' else
+                raw.decode({
+                    'MacCyrillic': 'windows-1251',
+                    'ISO-8859-7': 'windows-1251',
+                    }.get(encoding, encoding)))
+
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return value
+
 
 @public
 def timestamp(d):

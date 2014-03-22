@@ -21,7 +21,11 @@ class Song(Model):
             'pos': int,
             'id': int,
             'time': int,
-            'genre': lambda g: ', '.join(set(g)) if isinstance(g, list) else g
+            'genre': lambda g: ', '.join(set(g)) if isinstance(g, list) else g,
+
+            'title': fixutf8,
+            'album': fixutf8,
+            'artist': fixutf8,
             }
     _defaults = {
             'time': None,
