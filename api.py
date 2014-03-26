@@ -224,17 +224,13 @@ class MPD(object):
 
         return kwargs.get('default', None)
 
-
-    _wait_client = None
-    _wait_client_lock = Semaphore(1)
-    @property
-    def wait_client(self):
-        if not self._wait_client:
-            self._wait_client = mpd.MPDClient()
-            self._wait_client.connect(self._host, self._port)
-
-        return self._wait_client
-
     def wait(self, systems=(), timeout=0):
-        with self._wait_client_lock:
-            return self.wait_client.idle(*systems)
+        for _ in xrange(0, 2):
+            try:
+                with self._lock:
+                    return self._client.idle(*systems)
+
+            except (mpd.ConnectionError, IOError):
+                if not self.reconnect():
+                    break
+

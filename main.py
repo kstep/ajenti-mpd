@@ -147,15 +147,17 @@ class MpdPlugin(SectionPlugin):
         self.binder = Binder(None, self.find('mpd'))
         self.binder.setup(self)
         self.refresh()
-        #self.context.session.spawn(self.worker)
+        self.context.session.spawn(self.worker)
 
     def worker(self):
+        waiter = MPD()
+
         while True:
             if self._autorefresh:
                 self.refresh()
                 sleep(3)
             else:
-                self.refresh(self._mpd.wait((
+                self.refresh(waiter.wait((
                     MPD.EV_QUEUE_CHANGED,
                     MPD.EV_PLAYLIST_CHANGED,
                     MPD.EV_VOLUME_CHANGED,
@@ -225,23 +227,21 @@ class MpdPlugin(SectionPlugin):
 
     @on('refresh', 'click')
     def refresh(self, areas=()):
-        update = ['playlistinfo', 'status', 'currentsong', 'listplaylists', 'outputs']
-        defaults = [[], Status.EMPTY, Song.EMPTY, [], []]
-        #if not areas:
-            #update = ['playlistinfo', 'status', 'currentsong', 'listplaylists', 'outputs']
-            #defaults = [[], Status.EMPTY, Song.EMPTY, [], []]
+        if not areas:
+            update = ['playlistinfo', 'status', 'currentsong', 'listplaylists', 'outputs']
+            defaults = [[], Status.EMPTY, Song.EMPTY, [], []]
 
-        #else:
-            #update = list(set(ifilter(bool, flatten(
-                #('playlistinfo',) if area in (MPD.EV_QUEUE_CHANGED,) else
-                #('listplaylists',) if area in (MPD.EV_PLAYLIST_CHANGED,) else
-                #('status',) if area in (MPD.EV_VOLUME_CHANGED, MPD.EV_OPTIONS_CHANGED) else
-                #('status', 'currentsong') if area in (MPD.EV_PLAYER_CHANGED,) else
-                #('outputs',) if area in (MPD.EV_OUTPUT_CHANGED,) else
-                #None
-                #for area in areas))))
+        else:
+            update = list(set(ifilter(bool, flatten(
+                ('playlistinfo',) if area in (MPD.EV_QUEUE_CHANGED,) else
+                ('listplaylists',) if area in (MPD.EV_PLAYLIST_CHANGED,) else
+                ('status',) if area in (MPD.EV_VOLUME_CHANGED, MPD.EV_OPTIONS_CHANGED) else
+                ('status', 'currentsong') if area in (MPD.EV_PLAYER_CHANGED,) else
+                ('outputs',) if area in (MPD.EV_OUTPUT_CHANGED,) else
+                None
+                for area in areas))))
 
-            #defaults = map(lambda n: {} if n in ('status', 'currentsong') else [], update)
+            defaults = map(lambda n: {} if n in ('status', 'currentsong') else [], update)
 
         data = UpdateInfo(izip(update,
             self._mpd.bulk_do(*update, defaults=defaults)))
@@ -255,6 +255,11 @@ class MpdPlugin(SectionPlugin):
                 getattr(data, key))
 
         if 'status' in update:
+            # reset icons if not all playlist is to be updated
+            if 'playlistinfo' not in update:
+                for song in self.playlist:
+                    song.icon = 'music'
+
             try:
                 if self.status.is_playing:
                     self.find('play').visible = False
