@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 from ajenti.util import public
 from ajenti.plugins.mpd.api import *  # noqa
+from ajenti.plugins.models.api import *  # noqa
 
 @public
 class Output(Model):
