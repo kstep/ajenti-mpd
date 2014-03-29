@@ -3,8 +3,9 @@
 from ajenti.api import *  # noqa
 from ajenti.plugins import *  # noqa
 from ajenti.plugins.mpd.models import *  # noqa
-from ajenti.plugins.mpd.api import MPD, CommandError, flatten
+from ajenti.plugins.mpd.api import MPD, CommandError
 from ajenti.plugins.main.api import SectionPlugin
+from ajenti.plugins.models.api import flatten
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from itertools import izip, ifilter, imap, count
@@ -261,7 +262,7 @@ class MpdPlugin(SectionPlugin):
                     song.icon = 'music'
 
             try:
-                if self.status.is_playing:
+                if self.status.state == 'play':
                     self.find('play').visible = False
                     self.find('pause').visible = True
                     self.playlist[self.status.song].icon = 'play'

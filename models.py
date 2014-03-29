@@ -32,7 +32,7 @@ class Song(Model):
             'time': None,
             }
 
-    def init(self):
+    def _init(self):
         self.is_file = bool(self.get('title'))
         self.is_stream = bool(self.get('name'))
 
@@ -67,7 +67,7 @@ class Status(Model):
             'volume': 0,
             }
 
-    def init(self):
+    def _init(self):
         try:
             self.play_time, self.total_time = self.time
             self.play_time_str, self.total_time_str = time(self.play_time), time(self.total_time)
@@ -86,8 +86,6 @@ class Status(Model):
             self.progress = None
             self.time_ticker = '%s / %s' % (self.play_time_str, self.total_time_str)
 
-        self.is_playing = self.state == 'play'
-
         self.pvolume = self.volume / 100.0
         self.muted = self.volume == 0
 
@@ -102,7 +100,7 @@ class Stats(Model):
             'uptime': int,
             }
 
-    def init(self):
+    def _init(self):
         self.uptime_str = time(self.uptime)
         self.playtime_str = time(self.playtime)
         self.db_playtime_str = time(self.db_playtime)

@@ -7,6 +7,7 @@ info = PluginInfo(
     icon='music',
     dependencies=[
         PluginDependency('main'),
+        PluginDependency('models'),
         BinaryDependency('mpd'),
     ],
 )

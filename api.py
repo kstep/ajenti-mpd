@@ -1,5 +1,6 @@
 from ajenti.util import public
 from gevent.lock import Semaphore
+from mpd import CommandError
 import mpd
 
 @public

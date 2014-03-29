@@ -38,12 +38,12 @@
             </bind:dict>
 
             <bind:dict bind="song">
-                <box scroll="True" height="32" bind:visible="is_file">
+                <box scroll="True" height="32" bind:visible="title__exists">
                     <label text="Playing “" /><label bind="title" style="bold" />
                     <label text="” from “" /><label bind="album" style="bold" />
                     <label text="” by " /><label bind="artist" style="bold" />
                 </box>
-                <box scroll="True" height="32" bind:visible="is_stream">
+                <box scroll="True" height="32" bind:visible="name__exists">
                     <label text="Playing “" /><label bind="name" style="bold" /><label text="”" />
                 </box>
             </bind:dict>
