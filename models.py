@@ -21,7 +21,7 @@ class Song(Model):
             'last_modified': timestamp,
             'pos': int,
             'id': int,
-            'time': int,
+            'time': timedelta,
             'genre': lambda g: ', '.join(set(g)) if isinstance(g, list) else g,
 
             'title': fixutf8,
