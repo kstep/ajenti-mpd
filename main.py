@@ -280,7 +280,7 @@ class MpdPlugin(SectionPlugin):
     _last_volume = 0
     @on('mute', 'click')
     def mute(self):
-        if self.status.muted:
+        if self.status.volume == 0:
             self.volume(self._last_volume)
         else:
             self._last_volume = self.status.volume

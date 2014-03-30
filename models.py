@@ -36,11 +36,26 @@ class Song(Model):
         if 'name' in self:
             self.time = u'\u221E'
             self.icon = 'signal'
-            self.ticker = _('Playing “%s”') % self.name
 
-        else:
+        elif 'title' in self:
             self.icon = 'music'
-            self.ticker = _('Playing “%s” by “%s” from “%s”') % (self.title, self.artist, self.album)
+
+    @property
+    def ticker(self):
+        try:
+            return _('Playing “%s” by “%s” from “%s”') % (self.title, self.artist, self.album)
+
+        except AttributeError:
+            try:
+                return _('Playing “%s”') % self.name
+
+            except AttributeError:
+                return 'Playing something with unknown title'
+
+    @ticker.setter
+    def ticker(self, value):
+        pass
+
 
 @public
 class Status(Model):
