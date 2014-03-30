@@ -124,12 +124,6 @@ class MpdPlugin(SectionPlugin):
         self.search(add=True)
         self.refresh()
 
-    _autorefresh = False
-    @on('autorefresh', 'click')
-    def toggleautorefresh(self):
-        self._autorefresh = not self._autorefresh
-        self.find('autorefresh').pressed = self._autorefresh
-
     @on('rename', 'click')
     def rename_playlists(self):
         old_names = map(lambda p: p.playlist, self.playlists)
@@ -154,17 +148,13 @@ class MpdPlugin(SectionPlugin):
         waiter = MPD()
 
         while True:
-            if self._autorefresh:
-                self.refresh()
-                sleep(3)
-            else:
-                self.refresh(waiter.wait((
-                    MPD.EV_QUEUE_CHANGED,
-                    MPD.EV_PLAYLIST_CHANGED,
-                    MPD.EV_VOLUME_CHANGED,
-                    MPD.EV_OPTIONS_CHANGED,
-                    MPD.EV_PLAYER_CHANGED,
-                    MPD.EV_OUTPUT_CHANGED)))
+            self.refresh(waiter.wait((
+                MPD.EV_QUEUE_CHANGED,
+                MPD.EV_PLAYLIST_CHANGED,
+                MPD.EV_VOLUME_CHANGED,
+                MPD.EV_OPTIONS_CHANGED,
+                MPD.EV_PLAYER_CHANGED,
+                MPD.EV_OUTPUT_CHANGED)))
 
     def add(self, *urls):
         if not urls:
