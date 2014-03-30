@@ -37,14 +37,7 @@
             </bind:dict>
 
             <bind:dict bind="song">
-                <box scroll="True" height="32" bind:visible="title__truthy">
-                    <label text="Playing “" /><label bind="title" style="bold" />
-                    <label text="” from “" /><label bind="album" style="bold" />
-                    <label text="” by " /><label bind="artist" style="bold" />
-                </box>
-                <box scroll="True" height="32" bind:visible="name__truthy">
-                    <label text="Playing “" /><label bind="name" style="bold" /><label text="”" />
-                </box>
+                <label bind="ticker" />
             </bind:dict>
 
             <tabs id="tabs">

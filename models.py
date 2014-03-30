@@ -36,9 +36,11 @@ class Song(Model):
         if 'name' in self:
             self.time = u'\u221E'
             self.icon = 'signal'
+            self.ticker = _('Playing “%s”') % self.name
 
         else:
             self.icon = 'music'
+            self.ticker = _('Playing “%s” by “%s” from “%s”') % (self.title, self.artist, self.album)
 
 @public
 class Status(Model):
