@@ -13,7 +13,7 @@
                             <hc>
                                 <tooltip text="{Previous}"><button icon="step-backward" id="prev" style="mini" /></tooltip>
                                 <tooltip text="{Play}"><button icon="play" id="play" style="mini" /></tooltip>
-                                <tooltip text="{Pause}"><button icon="pause" id="pause" style="mini" visible="false" /></tooltip>
+                                <tooltip text="{Pause}"><button icon="pause" id="pause" style="mini" visible="False" /></tooltip>
                                 <tooltip text="{Stop}"><button icon="stop" id="stop" style="mini" /></tooltip>
                                 <tooltip text="{Next}"><button icon="step-forward" id="next" style="mini" /></tooltip>
                             </hc>
@@ -154,7 +154,7 @@
                             <dtr>
                                 <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
-                                <dtd><label bind="title" /></dtd>
+                                <dtd><label bind="title__or__file" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
                                 <dtd><label bind="time__str" /></dtd>
                                 <dtd>
