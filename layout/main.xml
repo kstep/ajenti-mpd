@@ -4,7 +4,7 @@
             <bind:dict bind="status">
                 <right>
                     <hc>
-                        <tooltip text="{Mute}"><togglebutton icon="volume-off" id="mute" style="mini" bind:pressed="muted" /></tooltip>
+                        <tooltip text="{Mute}"><togglebutton icon="volume-off" id="mute" style="mini" bind:pressed="volume__falsy" /></tooltip>
                         <tooltip text="{Volume down}"><button icon="volume-down" id="voldown" style="mini" /></tooltip>
                         <progressbar id="volume" width="100" bind:value="pvolume" />
                         <tooltip text="{Volume up}"><button icon="volume-up" id="volup" style="mini" /></tooltip>
