@@ -88,16 +88,13 @@ class MpdPlugin(SectionPlugin):
     @on('tabs', 'switch')
     def tab_switch(self):
         if self.find('tabs').active == 2:  # library tab
-            #self.library = imap(Song, ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo', default=[])))
-            self.taxonomy = Taxonomy(
-                    imap(lambda v: (v[0], ['* All ' + v[0] + ' *'] + v[1]),
-                    izip(
+            self.taxonomy = Taxonomy(izip(
                         ('artists', 'albums', 'genres'),
                         self._mpd.bulk_do([
                             ('list', 'artist'),
                             ('list', 'album'),
                             ('list', 'genre')
-                            ], defaults=([], [], [])))))
+                            ], defaults=([], [], []))))
             self.binder.populate()
 
     @on('search', 'click')
@@ -106,7 +103,7 @@ class MpdPlugin(SectionPlugin):
 
         filter = []
         for f in ('artist', 'album', 'genre'):
-            if self.taxonomy[f] and not self.taxonomy[f].startswith('* All '):
+            if self.taxonomy[f] is not None:
                 filter.append(f)
                 filter.append(self.taxonomy[f])
 

@@ -127,8 +127,22 @@ class Taxonomy(Model):
             'artists': [],
             'albums': [],
             'genres': [],
-            'artist': '',
-            'album': '',
-            'genre': '',
+            'artist': None,
+            'album': None,
+            'genre': None,
             }
+
+    def _init(self):
+        self.artists_labels = map(lambda n: fixutf8(n) if n else '* Unknown *', self.artists)
+        self.albums_labels = map(lambda n: fixutf8(n) if n else '* Unknown *', self.albums)
+        self.genres_labels = map(lambda n: fixutf8(n) if n else '* Unknown *', self.genres)
+
+        self.artists.insert(0, None)
+        self.artists_labels.insert(0, '* All artists *')
+
+        self.albums.insert(0, None)
+        self.albums_labels.insert(0, '* All albums *')
+
+        self.genres.insert(0, None)
+        self.genres_labels.insert(0, '* All genres *')
 

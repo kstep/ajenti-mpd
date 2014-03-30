@@ -127,13 +127,13 @@
                     <bind:dict bind="taxonomy">
                         <hc>
                             <tooltip text="{Artist}">
-                                <dropdown bind="artist" bind:values="artists" bind:labels="artists" />
+                                <dropdown bind="artist" bind:values="artists" bind:labels="artists_labels" />
                             </tooltip>
                             <tooltip text="{Album}">
-                                <dropdown bind="album" bind:values="albums" bind:labels="albums" />
+                                <dropdown bind="album" bind:values="albums" bind:labels="albums_labels" />
                             </tooltip>
                             <tooltip text="{Genre}">
-                                <dropdown bind="genre" bind:values="genres" bind:labels="genres" />
+                                <dropdown bind="genre" bind:values="genres" bind:labels="genres_labels" />
                             </tooltip>
                             <indent>
                             </indent>
