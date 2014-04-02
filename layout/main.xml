@@ -4,7 +4,7 @@
             <bind:dict bind="status">
                 <right>
                     <hc>
-                        <tooltip text="{Mute}"><togglebutton icon="volume-off" id="mute" style="mini" bind:pressed="volume__falsy" /></tooltip>
+                        <tooltip text="{Mute}"><togglebutton icon="volume-off" id="mute" style="mini" bind:pressed="volume" bindtransform="bool" /></tooltip>
                         <tooltip text="{Volume down}"><button icon="volume-down" id="voldown" style="mini" /></tooltip>
                         <progressbar id="volume" width="100" bind:value="pvolume" />
                         <tooltip text="{Volume up}"><button icon="volume-up" id="volup" style="mini" /></tooltip>
@@ -65,7 +65,7 @@
                                 <dtd><label bind="artist" /></dtd>
                                 <dtd><label bind="title" /><label bind="name" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
-                                <dtd><label bind="time__str" /></dtd>
+                                <dtd><label bind="time" bindtransform="str" /></dtd>
                                 <dtd>
                                     <tooltip text="{Play}"><button icon="play" id="play" style="mini" /></tooltip>
                                     <tooltip text="{Remove}"><button icon="remove" style="mini" bind="__delete" /></tooltip>
@@ -147,9 +147,9 @@
                             <dtr>
                                 <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
-                                <dtd><label bind="title__or__file" /></dtd>
+                                <dtd><label bind="title__file" /></dtd>
                                 <dtd><label bind="genre" /></dtd>
-                                <dtd><label bind="time__str" /></dtd>
+                                <dtd><label bind="time" bindtransform="str" /></dtd>
                                 <dtd>
                                     <tooltip text="{Append to Now Playing}"><button icon="play-sign" style="mini" id="add" /></tooltip>
                                 </dtd>
