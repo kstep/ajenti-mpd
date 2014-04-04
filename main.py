@@ -6,6 +6,7 @@ from ajenti.plugins.mpd.models import *  # noqa
 from ajenti.plugins.mpd.api import MPD, CommandError
 from ajenti.plugins.main.api import SectionPlugin
 from ajenti.plugins.models.api import flatten
+from ajenti.plugins.configurator.api import ClassConfigEditor
 from ajenti.ui.binder import Binder
 from ajenti.ui import on
 from itertools import izip, ifilter, imap, count
@@ -14,8 +15,21 @@ from urllib2 import urlopen
 from contextlib import closing
 import os
 
+
+@plugin
+class MpdPluginConfigurator(ClassConfigEditor):
+    title = 'MPD'
+    icon = 'music'
+
+    def init(self):
+        self.append(self.ui.inflate('mpd:config'))
+
+
 @plugin
 class MpdPlugin(SectionPlugin):
+    default_classconfig = {'host': '127.0.0.1', 'port': 6600}
+    classconfig_editor = MpdPluginConfigurator
+
     def bindui(self, ui_id, method_name):
         def decorator(method):
             setattr(self.find(ui_id), method_name, method)
@@ -23,7 +37,7 @@ class MpdPlugin(SectionPlugin):
         return decorator
 
     def init(self):
-        self._mpd = MPD()
+        self._mpd = MPD(**self.classconfig)
 
         # meta-data
         self.title = 'MPD'
