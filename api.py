@@ -105,3 +105,12 @@ class MPD(object):
                 if not self.reconnect():
                     break
 
+    @property
+    def is_connected(self):
+        try:
+            self._client.ping()
+            return True
+
+        except (mpd.ConnectionError, IOError):
+            return False
+

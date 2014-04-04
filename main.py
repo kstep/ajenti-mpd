@@ -111,6 +111,7 @@ class MpdPlugin(SectionPlugin):
                             ], defaults=([], [], []))))
             self.binder.populate()
 
+
     @on('search', 'click')
     def search(self, add=False):
         self.binder.update()
@@ -150,22 +151,34 @@ class MpdPlugin(SectionPlugin):
 
 
     def on_first_page_load(self):
-        self.binder = Binder(None, self.find('mpd'))
-        self.binder.setup(self)
+        self.binder = Binder(self, self.find('mpd'))
         self.refresh()
         self.context.session.spawn(self.worker)
 
     def worker(self):
         waiter = MPD()
+        connected = True
 
         while True:
-            self.refresh(waiter.wait((
+            events = waiter.wait((
                 MPD.EV_QUEUE_CHANGED,
                 MPD.EV_PLAYLIST_CHANGED,
                 MPD.EV_VOLUME_CHANGED,
                 MPD.EV_OPTIONS_CHANGED,
                 MPD.EV_PLAYER_CHANGED,
-                MPD.EV_OUTPUT_CHANGED)))
+                MPD.EV_OUTPUT_CHANGED))
+
+            if events is None:
+                if connected:
+                    self.context.notify('error', 'Could not connect to MPD!')
+                    self.context.launch('configure-plugin', plugin=self)
+                    connected = False
+
+                sleep(10)
+
+            else:
+                connected = True
+                self.refresh(events)
 
     def add(self, *urls):
         if not urls:
