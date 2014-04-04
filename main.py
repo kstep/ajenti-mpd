@@ -126,7 +126,7 @@ class MpdPlugin(SectionPlugin):
             return
 
         self.library = map(Song, (self._mpd.do('findadd' if add else 'find', *filter) or []) if filter
-                else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo')))
+                else ifilter(lambda s: 'file' in s, self._mpd.do('listallinfo') or []))
 
         self.binder.populate()
 
