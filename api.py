@@ -23,7 +23,7 @@ class MPD(object):
             EV_OUTPUT_CHANGED, EV_OPTIONS_CHANGED, EV_STICKER_CHANGED, EV_SUBS_CHANGED, EV_MESSAGE_RECEIVED]
 
     def __init__(self, host='127.0.0.1', port=6600):
-        self._host, self._port = host, port
+        self._host, self._port = str(host), int(port)
         self._client, self._lock = mpd.MPDClient(), Semaphore(1)
 
     def disconnect(self):
