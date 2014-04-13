@@ -83,7 +83,7 @@ class Status(Model):
     def _init(self):
         try:
             self.play_time, self.total_time = self.time
-            self.progress = float(self.play_time) / float(self.total_time)
+            self.progress = float(self.play_time.total_seconds()) / float(self.total_time.total_seconds())
             self.time_ticker = '%s / %s' % (self.play_time, self.total_time)
 
         except (AttributeError, ValueError, TypeError):
@@ -94,9 +94,7 @@ class Status(Model):
         except ZeroDivisionError:
             self.play_time, self.total_time = self.time[0], None
             self.progress = None
-            self.time_ticker = '%s / %s' % (self.play_time, self.total_time)
-
-        self.pvolume = self.volume / 100.0
+            self.time_ticker = u'%s / \u221E' % self.play_time
 
 @public
 class Stats(Model):
