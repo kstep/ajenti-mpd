@@ -36,9 +36,11 @@ class Song(Model):
         if 'name' in self:
             self.time = u'\u221E'
             self.icon = 'signal'
+            self.is_stream = True
 
         elif 'title' in self:
             self.icon = 'music'
+            self.is_stream = False
 
     @property
     def ticker(self):

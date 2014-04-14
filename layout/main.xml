@@ -62,7 +62,10 @@
                             <dtr>
                                 <dtd><icon bind="icon" /></dtd>
                                 <dtd><label bind="artist" /></dtd>
-                                <dtd><label bind="title" /><label bind="name" /></dtd>
+                                <dtd>
+                                    <box scroll="True" width="300" bind:visible="is_stream" bindtransform="lambda s: not s"><label bind="title" /></box>
+                                    <box scroll="True" width="300" bind:visible="is_stream"><label bind="name" /></box>
+                                </dtd>
                                 <dtd><label bind="genre" /></dtd>
                                 <dtd><label bind="time" bindtransform="str" /></dtd>
                                 <dtd>
