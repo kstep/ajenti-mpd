@@ -8,12 +8,23 @@ from ajenti.plugins.main.api import SectionPlugin
 from ajenti.plugins.models.api import flatten
 from ajenti.plugins.configurator.api import ClassConfigEditor
 from ajenti.ui.binder import Binder
-from ajenti.ui import on
+from ajenti.ui import on, p, UIElement
 from itertools import izip, ifilter, imap, count
 from gevent import sleep
 from urllib2 import urlopen
 from contextlib import closing
+from datetime import timedelta
 import os
+
+
+@p('text', default=None, bindtypes=[str, unicode])
+@p('time', default=0, bindtypes=[int, float, timedelta])
+@p('maxtime', default=0, bindtypes=[int, float, timedelta])
+@p('started', default=False, bindtypes=[bool])
+@p('width', default=None)
+@plugin
+class TimeProgressBar(UIElement):
+    typeid = 'timeprogressbar'
 
 
 @plugin

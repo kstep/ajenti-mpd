@@ -81,20 +81,8 @@ class Status(Model):
             }
 
     def _init(self):
-        try:
-            self.play_time, self.total_time = self.time
-            self.progress = float(self.play_time.total_seconds()) / float(self.total_time.total_seconds())
-            self.time_ticker = '%s / %s' % (self.play_time, self.total_time)
-
-        except (AttributeError, ValueError, TypeError):
-            self.total_time, self.play_time = None, None
-            self.time, self.progress = None, None
-            self.time_ticker = ''
-
-        except ZeroDivisionError:
-            self.play_time, self.total_time = self.time[0], None
-            self.progress = None
-            self.time_ticker = u'%s / \u221E' % self.play_time
+        self.play_time, self.total_time = map(lambda t: t.total_seconds(), self.time)
+        self.is_playing = self.state == 'play'
 
 @public
 class Stats(Model):

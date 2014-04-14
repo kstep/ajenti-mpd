@@ -28,8 +28,7 @@
                     <tooltip text="{Consume}"><togglebutton icon="eraser" id="consume" style="mini" bind:pressed="consume" /></tooltip>
                     <indent>
                         <hc>
-                            <label bind="time_ticker" />
-                            <indent><progressbar bind="progress" width="120" /></indent>
+                            <timeprogressbar bind:time="play_time" bind:maxtime="total_time" bind:started="is_playing" width="120" />
                             <tooltip text="{Refresh}"><button icon="refresh" id="refresh" style="mini" /></tooltip>
                         </hc>
                     </indent>
