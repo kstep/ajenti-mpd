@@ -11,8 +11,16 @@ Install **models** plugin into `/var/lib/ajenti/plugins` along with this plugin 
 # service restart ajenti
 ```
 
+You will also need to compile `content/js/main.coffee` file with [CoffeeScript][] compiler:
+
+```
+# cd /var/lib/ajenti/plugins/mpd/content/js
+# coffee -c main.coffee && mv main.js main.coffee.js && cp main.coffee.js main.coffee.c.js
+```
+
 Now login to your Ajenti panel and go to new **MPD** menu item in **Software** section. You may need to configure it.
 
 [Ajenti]: http://ajenti.org/
 [MPD]: http://www.musicpd.org/
 [models]: http://github.com/kstep/ajenti-models
+[CoffeeScript]: http://coffeescript.org/
