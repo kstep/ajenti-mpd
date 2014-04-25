@@ -3,6 +3,8 @@ from ajenti.util import public
 from ajenti.plugins.mpd.api import *  # noqa
 from ajenti.plugins.models.api import *  # noqa
 
+mpd_timestamp = timestamp('%Y-%m-%dT%H:%M:%SZ', '%Y')
+
 @public
 class Output(Model):
     _casts = {
@@ -12,13 +14,13 @@ class Output(Model):
 
 @public
 class Playlist(Model):
-    _casts = {'last_modified': timestamp}
+    _casts = {'last_modified': mpd_timestamp}
 
 @public
 class Song(Model):
     _casts = {
-            'date': timestamp,
-            'last_modified': timestamp,
+            'date': mpd_timestamp,
+            'last_modified': mpd_timestamp,
             'pos': int,
             'id': int,
             'time': timedelta,
