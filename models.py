@@ -80,6 +80,7 @@ class Status(Model):
     _defaults = {
             'state': None,
             'volume': 0,
+            'time': (timedelta(0), timedelta(0))
             }
 
     def _init(self):
