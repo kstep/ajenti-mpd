@@ -101,9 +101,9 @@ class Stats(Model):
             }
 
     def _init(self):
-        self.uptime_str = time(self.uptime)
-        self.playtime_str = time(self.playtime)
-        self.db_playtime_str = time(self.db_playtime)
+        self.uptime_str = minutes(self.uptime)
+        self.playtime_str = minutes(self.playtime)
+        self.db_playtime_str = minutes(self.db_playtime)
 
 @public
 class UpdateInfo(Model):
